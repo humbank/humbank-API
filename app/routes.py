@@ -63,6 +63,7 @@ def create_user_route():
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         pin = data.get("pin")
+        username = data.get("username")
 
         if not first_name or not last_name or not pin:
             return jsonify("Missing fields"), 400
@@ -71,6 +72,7 @@ def create_user_route():
             first_name=first_name,
             last_name=last_name,
             balance=0,
+            username = username,
         )
         new_account.set_pin(pin)
 

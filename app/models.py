@@ -12,6 +12,7 @@ class Account(db.Model):
     balance = db.Column(db.Numeric(11, 2), nullable=False, default=0.00)
     pin_hash = db.Column(db.String(255), nullable=True)
     username = db.Column(db.String(255), nullable=False)
+    
     def set_pin(self, pin):
         self.pin_hash = hash_pin(pin)
 
