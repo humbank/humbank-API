@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import get_jwt_identity
 from .models import Account
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username
-from .db_raw import get_balance, execute_transfer, get_todays_transactions, get_user_by_id
+from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id
 from datetime import datetime
 
 api = Blueprint("api", __name__)
@@ -37,7 +37,7 @@ def login():
 
         # Create token
         token = generate_token(user_id)
-        return jsonify(token), 200
+        return jsonify(token, user_id), 200
 
     except Exception as e:
         return jsonify(str(e)), 520
@@ -150,7 +150,15 @@ def todays_transactions_route(current_user_id):
 @api.route("/transactions_amount", methods=["GET"])
 @require_auth
 def transactions_amount(current_user_id):
-    pass
+    try:
+        now = datetime.now()
+        start = datetime.combine(now.date(), datetime.min.time())
+
+        results = transactions_amount(current_user_id, start, now)
+        return jsonify(results), 200
+    
+    except Exception as e:
+        return jsonify(str(e)), 520
 
 # -------------------------
 #       GET USER BY ID
