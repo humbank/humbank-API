@@ -144,7 +144,13 @@ def todays_transactions_route(current_user_id):
     except Exception as e:
         return jsonify(str(e)), 520
 
-
+# ----------------------------
+#  TODAY'S TRANSACTION AMOUNT
+# ----------------------------
+@api.route("/transactions_amount", methods=["GET"])
+@require_auth
+def transactions_amount(current_user_id):
+    pass
 
 # -------------------------
 #       GET USER BY ID
