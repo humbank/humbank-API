@@ -7,6 +7,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from functools import wraps
+import re
 
 
 bcrypt = Bcrypt()
@@ -67,3 +68,14 @@ def require_auth(func):
             return jsonify(str(e)), 401
 
     return wrapper
+
+# -----------------------------
+# 4. Validate the username
+# -----------------------------
+USERNAME_REGEX = re.compile(r"^[a-z0-9_]{3,20}$")
+
+def normalize_username(username: str) -> str:
+    return username.strip().lower()
+
+def validate_username(username: str) -> bool:
+    return bool(USERNAME_REGEX.match(username))
