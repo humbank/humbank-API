@@ -145,7 +145,7 @@ def transactions_amount(user_id):
         cursor = conn.cursor(dictionary=True)
 
         sql = """
-            SELECT COUNT(*) from transactions
+            SELECT COUNT(*) as trans_amount from transactions
             WHERE (payer_id = %s OR issuer_id = %s)
         """
 
