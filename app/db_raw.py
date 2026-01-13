@@ -150,7 +150,7 @@ def transactions_amount(user_id, start_of_day, now):
         """
 
         cursor.execute(sql, (user_id, user_id))
-        results = cursor.fetchall()
+        results = cursor.fetchone()[0]
 
         return results
 

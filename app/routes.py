@@ -149,7 +149,7 @@ def todays_transactions_route(current_user_id):
 # ----------------------------
 @api.route("/transactions_amount", methods=["GET"])
 @require_auth
-def transactions_amount(current_user_id):
+def transactions_amount_route(current_user_id):
     try:
         results = transactions_amount(current_user_id)
         return jsonify(results), 200
