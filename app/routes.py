@@ -120,7 +120,7 @@ def execute_transfer_route(current_user_id):
         result = execute_transfer(payer_id, issuer_id, amount, transaction_id)
 
         if result is True:
-            return jsonify("Transfer completed"), 200
+            return 200
         else:
             return jsonify(result), 400
 
