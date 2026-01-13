@@ -18,4 +18,5 @@ class Account(db.Model):
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
-        #hallo
+        #test
+        #hehe
