@@ -122,7 +122,7 @@ def execute_transfer_route(current_user_id):
         if result is True:
             return jsonify("Transfer completed"), 200
         else:
-            return jsonify(result), 400
+            return "", 400
 
     except Exception as e:
         return jsonify(str(e)), 520

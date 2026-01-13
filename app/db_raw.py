@@ -149,8 +149,8 @@ def transactions_amount(user_id, start_of_day, now):
             WHERE (payer_id = %s OR issuer_id = %s)
         """
 
-        cursor.execute(sql, (user_id, user_id, start_of_day, now))
-        results = cursor.fetchone()[0]
+        cursor.execute(sql, (user_id, user_id))
+        results = cursor.fetchall()
 
         return results
 
