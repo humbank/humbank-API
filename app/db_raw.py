@@ -147,7 +147,6 @@ def transactions_amount(user_id, start_of_day, now):
         sql = """
             SELECT COUNT(*) from transactions
             WHERE (payer_id = %s OR issuer_id = %s)
-            AND transaction_date between %s AND %s
         """
 
         cursor.execute(sql, (user_id, user_id, start_of_day, now))
