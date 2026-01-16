@@ -12,11 +12,10 @@ class Account(db.Model):
     balance = db.Column(db.Numeric(11, 2), nullable=False, default=0.00)
     pin_hash = db.Column(db.String(255), nullable=True)
     username = db.Column(db.String(25), nullable=False, unique=True)
+    role = db.Column(db.String(25), nullable=False, default="user")
     
     def set_pin(self, pin):
         self.pin_hash = hash_pin(pin)
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
-        #test
-        #hehe

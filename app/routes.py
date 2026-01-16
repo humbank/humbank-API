@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import get_jwt_identity
 from .models import Account
-from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username
+from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, require_role
 from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id
 from datetime import datetime
 
@@ -60,6 +60,8 @@ def get_balance_route(current_user_id):
 #       CREATE USER
 # -------------------------
 @api.route("/create_user", methods=["POST"])
+@require_auth
+@require_role("admin")
 def create_user_route():
     try:
         data = request.get_json() or {}
@@ -68,8 +70,9 @@ def create_user_route():
         last_name = data.get("last_name")
         pin = data.get("pin")
         username = data.get("username")
+        role = data.get("role")
 
-        if not first_name or not last_name or not pin or not username:
+        if not first_name or not last_name or not pin or not username or not role:
             return jsonify("Missing fields"), 400
         
         pin = str(pin)
@@ -84,6 +87,7 @@ def create_user_route():
             last_name=last_name,
             balance=0,
             username = username,
+            role = role,
         )
         new_account.set_pin(pin)
 

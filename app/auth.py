@@ -8,6 +8,7 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
+from .models import Account
 
 
 bcrypt = Bcrypt()
@@ -79,3 +80,20 @@ def normalize_username(username: str) -> str:
 
 def validate_username(username: str) -> bool:
     return bool(USERNAME_REGEX.match(username))
+
+# ------------------------------------
+# 5. Check permissions of user's role
+# ------------------------------------
+def require_role(*allowed_roles):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = Account.query.get(user_id)
+
+            if not user or user.role not in allowed_roles:
+                return jsonify({"Error": "Forbidden"}), 403
+
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
