@@ -79,13 +79,15 @@ def create_user_route(current_user_id):
         username = normalize_username(username=username)
         
         if not validate_username(username=username):
-            return jsonify("Username must be 3-25 charakters, lowercase letters, "
+            return jsonify("Username must be 3-25 characters, lowercase letters, "
             "underscores or numbers only"), 400
+        
+        start_balance = 100
         
         new_account = Account(
             first_name=first_name,
             last_name=last_name,
-            balance=0,
+            balance=start_balance,
             username = username,
             role = role,
         )
