@@ -113,7 +113,7 @@ def create_user_route(current_user_id):
 @api.route("/create_business", methods=["POST"])
 @require_auth
 @require_role("admin")
-def create_user_route(current_user_id):
+def create_business_route(current_user_id):
     try:
         data = request.get_json() or {}
 
