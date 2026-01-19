@@ -136,21 +136,21 @@ def get_todays_transactions(user_id, start_of_day, now):
         conn.close()
 
 #get the amount of transactions done today
-def transactions_amount(user_id, start_of_day, now):
+def transactions_amount(user_id):
     try:
-        if not (user_id and start_of_day and now and id_exists(user_id)):
+        if not (user_id and id_exists(user_id)):
             raise Exception("Missing requirements or id not existing")
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
 
         sql = """
-            SELECT COUNT(*) from transactions
+            SELECT COUNT(*) as trans_amount from transactions
             WHERE (payer_id = %s OR issuer_id = %s)
         """
 
         cursor.execute(sql, (user_id, user_id))
-        results = cursor.fetchall()
+        results = cursor.fetchone()
 
         return results
 
