@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
-from .models import Account
+
 
 
 bcrypt = Bcrypt()
@@ -88,6 +88,9 @@ def require_role(*allowed_roles):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+
+            from .models import Account
+            
             user_id = get_jwt_identity()
             user = Account.query.get(user_id)
 
