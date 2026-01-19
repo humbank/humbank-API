@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import get_jwt_identity
-from .models import Account
-from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, require_role
-from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id
+from .models import Account, BusinessAccount, BusinessMember
+from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
+from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
 from datetime import datetime
+import json
 
 api = Blueprint("api", __name__)
 
@@ -105,6 +106,82 @@ def create_user_route(current_user_id):
     except Exception as e:
         return jsonify(str(e)), 520
 
+
+# -------------------------
+#       CREATE BUSINESS
+# -------------------------
+@api.route("/create_business", methods=["POST"])
+@require_auth
+@require_role("admin")
+def create_user_route(current_user_id):
+    try:
+        data = request.get_json() or {}
+
+        business_name = data.get("business_name")
+        pin = data.get("pin")
+        owner_username = data.get("owner_username")
+        description = data.get("description") if data.get("desciption") else "We will greet you in person!"
+
+        if not business_name or not pin or not owner_username:
+            return jsonify("Missing fields"), 400
+        
+        pin = str(pin)
+        business_name = normalize_business_name(business_name=business_name)
+        
+        if not validate_username(business_name=business_name):
+            return jsonify("Business name must be 3-25 characters, "
+            "underscores or numbers only"), 400
+        
+        owner_id = get_user_id_by_username(owner_username)
+
+        if not owner_id:
+            return jsonify("User not found"), 404
+
+        if not can_create_business(owner_id, limit=1):
+            return jsonify("Owner already has maximum businesses"), 403
+        
+        start_balance = 0
+        
+        new_business_account = BusinessAccount(
+            business_name = business_name,
+            owner_id = owner_username,
+            balance=start_balance,
+        )
+        new_business_account.set_pin(pin)
+
+        #add description to description file
+        with open("business_descr.json", "w") as file:
+            json.dump({"new_business_account.id":description})
+
+
+        from . import db
+        db.session.add(new_business_account)
+        db.session.flush()
+
+        membership = BusinessMember(
+            user_id=owner_id,
+            business_id=new_business_account.id,
+            role="owner"
+        )
+        db.session.add(membership)
+
+        db.session.commit()
+
+        return jsonify({"message": "Business created", "id": new_business_account.id}), 201
+    
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify("Business name already taken"), 400
+
+    except Exception as e:
+        return jsonify(str(e)), 520
+    
+# --------------------------------
+#     BUSINESS CREATION HELPER
+# --------------------------------
+def can_create_business(user_id, limit=1):
+    count = BusinessAccount.query.filter_by(owner_id = user_id).count()
+    return limit < count
 
 # -------------------------
 #     EXECUTE TRANSFER

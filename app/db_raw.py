@@ -21,6 +21,16 @@ def id_exists(id):
     
     return result is not None
 
+def username_exists(username):
+    conn = getBank()
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM accounts WHERE username = %s;", (username,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return result is not None
+
 def get_balance(user_id):
     try:
         if not (user_id and id_exists(user_id)):
@@ -175,6 +185,30 @@ def get_user_by_id(user_id):
                 where id = %s;"""
         
         cursor.execute(sql, (user_id,))
+        results = cursor.fetchone()
+
+        return results
+    
+    except Exception as e:
+        return str(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+#get the user id by the username
+def get_user_id_by_username(username):
+    try:
+        if not (username and username_exists(username)):
+            raise Exception("Missing requirements or username not existing")
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+                select id from accounts
+                where username = %s;"""
+        
+        cursor.execute(sql, (username,))
         results = cursor.fetchone()
 
         return results

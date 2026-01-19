@@ -70,10 +70,11 @@ def require_auth(func):
 
     return wrapper
 
-# -----------------------------
-# 4. Validate the username
-# -----------------------------
-USERNAME_REGEX = re.compile(r"^[a-z0-9_]{3,20}$")
+
+# -----------------------------------------
+# 4. Validate and normalize the username
+# -----------------------------------------
+USERNAME_REGEX = re.compile(r"^[a-z0-9_]{3,25}$")
 
 def normalize_username(username: str) -> str:
     return username.strip().lower()
@@ -81,8 +82,20 @@ def normalize_username(username: str) -> str:
 def validate_username(username: str) -> bool:
     return bool(USERNAME_REGEX.match(username))
 
+
+# -------------------------------
+# 5. Validate the business_name
+# -------------------------------
+USERNAME_REGEX = re.compile(r"^[a-z0-9_]{3,25}$")
+
+def normalize_business_name(business_name: str) -> str:
+    return business_name.strip()
+
+def validate_business_name(business_name: str) -> bool:
+    return bool(USERNAME_REGEX.match(business_name))
+
 # ------------------------------------
-# 5. Check permissions of user's role
+# 6. Check permissions of user's role
 # ------------------------------------
 def require_role(*allowed_roles):
     def decorator(fn):
