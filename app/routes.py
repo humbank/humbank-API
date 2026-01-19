@@ -149,6 +149,11 @@ def create_business_route(current_user_id):
         )
         new_business_account.set_pin(pin)
 
+        
+        from . import db
+        db.session.add(new_business_account)
+        db.session.flush()
+
         #add description to description file
         descr_file = "business_descr.json"
         data = {}
@@ -164,11 +169,6 @@ def create_business_route(current_user_id):
 
         with open(descr_file, "w") as file:
             json.dump(data, file)
-
-
-        from . import db
-        db.session.add(new_business_account)
-        db.session.flush()
 
         membership = BusinessMember(
             user_id=owner_id,
