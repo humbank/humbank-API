@@ -153,9 +153,12 @@ def todays_transactions_route(current_user_id):
 # ----------------------------
 @api.route("/transactions_amount", methods=["GET"])
 @require_auth
-def transactions_amount_route(current_user_id):
+def transactions_amount(current_user_id):
     try:
-        results = transactions_amount(current_user_id)
+        now = datetime.now()
+        start = datetime.combine(now.date(), datetime.min.time())
+
+        results = transactions_amount(current_user_id, start, now)
         return jsonify(results), 200
     
     except Exception as e:
