@@ -86,7 +86,7 @@ def validate_username(username: str) -> bool:
 # -------------------------------
 # 5. Validate the business_name
 # -------------------------------
-USERNAME_REGEX = re.compile(r"^[a-z0-9_]{3,25}$")
+USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_]{3,25}$")
 
 def normalize_business_name(business_name: str) -> str:
     return business_name.strip()
