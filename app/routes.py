@@ -5,6 +5,7 @@ from .auth import check_pin, generate_token, require_auth, normalize_username, v
 from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
 from datetime import datetime
 import json
+import os
 
 api = Blueprint("api", __name__)
 
@@ -157,16 +158,17 @@ def create_business_route(current_user_id):
         #add description to description file
         descr_file = "business_descr.json"
         data = {}
-
-        with open(descr_file, "r") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                data = {}
+        if os.path.exists(descr_file):
+            with open(descr_file, "r") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
 
         # Add new business
         data[new_business_account.id] = description
 
+        # Write back
         with open(descr_file, "w") as file:
             json.dump(data, file)
 
