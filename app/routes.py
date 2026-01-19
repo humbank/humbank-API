@@ -144,7 +144,7 @@ def create_business_route(current_user_id):
         
         new_business_account = BusinessAccount(
             business_name = business_name,
-            owner_id = owner_username,
+            owner_id = owner_id,
             balance=start_balance,
         )
         new_business_account.set_pin(pin)
