@@ -169,9 +169,9 @@ def create_business_route(current_user_id):
 
         return jsonify({"message": "Business created", "id": new_business_account.id}), 201
     
-    except IntegrityError:
-        db.session.rollback()
-        return jsonify("Business name already taken"), 400
+    #except IntegrityError:
+    #    db.session.rollback()
+    #   return jsonify("Business name already taken"), 400
 
     except Exception as e:
         return jsonify(str(e)), 520
