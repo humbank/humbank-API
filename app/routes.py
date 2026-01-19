@@ -120,7 +120,7 @@ def create_business_route(current_user_id):
         business_name = data.get("business_name")
         pin = data.get("pin")
         owner_username = data.get("owner_username")
-        description = data.get("description") if data.get("desciption") else "We will greet you in person!"
+        description = data.get("description") or "We will greet you in person!"
 
         if not business_name or not pin or not owner_username:
             return jsonify("Missing fields"), 400
@@ -150,8 +150,20 @@ def create_business_route(current_user_id):
         new_business_account.set_pin(pin)
 
         #add description to description file
-        with open("business_descr.json", "w") as file:
-            json.dump({"new_business_account.id":description})
+        descr_file = "business_descr.json"
+        data = {}
+
+        with open(descr_file, "r") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                data = {}
+
+        # Add new business
+        data[new_business_account.id] = description
+
+        with open(descr_file, "w") as file:
+            json.dump(data, file)
 
 
         from . import db
