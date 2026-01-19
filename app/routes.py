@@ -192,8 +192,8 @@ def create_business_route(current_user_id):
 #     BUSINESS CREATION HELPER
 # --------------------------------
 def can_create_business(user_id, limit=1):
-    count = BusinessAccount.query.filter_by(owner_id = user_id).count()
-    return limit < count
+    count = BusinessAccount.query.filter_by(owner_id=user_id).count()
+    return count < limit
 
 # -------------------------
 #     EXECUTE TRANSFER

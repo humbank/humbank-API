@@ -211,7 +211,7 @@ def get_user_id_by_username(username):
         cursor.execute(sql, (username,))
         results = cursor.fetchone()
 
-        return results
+        return results[0]
     
     except Exception as e:
         return str(e)
