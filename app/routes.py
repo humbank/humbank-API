@@ -128,7 +128,7 @@ def create_business_route(current_user_id):
         pin = str(pin)
         business_name = normalize_business_name(business_name=business_name)
         
-        if not validate_username(business_name=business_name):
+        if not validate_business_name(business_name=business_name):
             return jsonify("Business name must be 3-25 characters, "
             "underscores or numbers only"), 400
         
