@@ -62,7 +62,7 @@ def get_balance_route(current_user_id):
 @api.route("/create_user", methods=["POST"])
 @require_auth
 @require_role("admin")
-def create_user_route():
+def create_user_route(current_user_id):
     try:
         data = request.get_json() or {}
 
