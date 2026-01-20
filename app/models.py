@@ -44,7 +44,7 @@ class Account(db.Model):
         default="user"
     )
 
-    deleted_at = db.datetime
+#here was a roblem got removed
     
     def set_pin(self, pin):
         self.pin_hash = hash_pin(pin)
