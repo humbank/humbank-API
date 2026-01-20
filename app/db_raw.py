@@ -209,9 +209,9 @@ def get_user_id_by_username(username):
                 where username = %s;"""
         
         cursor.execute(sql, (username,))
-        results = cursor.fetchone()[0]
+        results = cursor.fetchone()
 
-        return results
+        return results["id"]
     
     except Exception as e:
         return str(e)
