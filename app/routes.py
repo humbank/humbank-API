@@ -175,7 +175,7 @@ def create_business_route(current_user_id):
                 return jsonify(str(e)), 520
             
         if is_deleted:
-            raise Exception("Business was already created and deleted")
+            raise Exception("Business is disabled")
 
 
         # Add new business
@@ -239,10 +239,10 @@ def disable_business_route(current_user_id):
                     data = {}
 
         # Add new business
-        data[new_business_account.id] = description
+        data[business_id] = "disabled"
 
         # Write back
-        with open(descr_file, "w") as file:
+        with open(deleted_file, "w") as file:
             json.dump(data, file)
 
         return jsonify("Business disabled"), 200
