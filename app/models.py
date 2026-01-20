@@ -43,6 +43,8 @@ class Account(db.Model):
         nullable=False, 
         default="user"
     )
+
+    deleted_at = db.datetime
     
     def set_pin(self, pin):
         self.pin_hash = hash_pin(pin)

@@ -155,6 +155,7 @@ def create_business_route(current_user_id):
 
         #add description to description file
         descr_file = "business_descr.json"
+        deleted_file = "business_deleted.json"
         data = {}
         if os.path.exists(descr_file):
             with open(descr_file, "r") as file:
@@ -162,6 +163,20 @@ def create_business_route(current_user_id):
                     data = json.load(file)
                 except json.JSONDecodeError:
                     data = {}
+
+        is_deleted = False
+        with open(deleted_file, "r") as file:
+            try:
+                contents = json.load(file)
+                if str(new_business_account.id) in contents:
+                    is_deleted = True
+                
+            except Exception as e:
+                return jsonify(str(e)), 520
+            
+        if is_deleted:
+            raise Exception("Business was already created and deleted")
+
 
         # Add new business
         data[new_business_account.id] = description
@@ -183,6 +198,7 @@ def create_business_route(current_user_id):
     
 
     except Exception as e:
+        db.session.rollback()
         return jsonify(str(e)), 520
     
 # --------------------------------
@@ -191,6 +207,81 @@ def create_business_route(current_user_id):
 def can_create_business(user_id, limit=1):
     count = BusinessAccount.query.filter_by(owner_id=user_id).count()
     return count < limit
+
+# --------------------------------
+#     DISABLE BUSINESS
+# --------------------------------
+@api.route("/disable_business", methods=["POST"])
+@require_auth
+@require_role("admin")
+def disable_business_route(current_user_id):
+    try:
+        data = request.get_json() or {}
+
+        business_id = data.get("business_id")
+
+        from . import db
+
+        business = BusinessAccount.query.get(business_id)
+        if not business or business.deleted_at is not None:
+            return jsonify("Business not found"), 404
+
+        business.deleted_at = db.func.now()
+        db.session.commit()
+
+        deleted_file = "business_deleted.json"
+        data = {}
+        if os.path.exists(deleted_file):
+            with open(deleted_file, "r") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+
+        # Add new business
+        data[new_business_account.id] = description
+
+        # Write back
+        with open(descr_file, "w") as file:
+            json.dump(data, file)
+
+        return jsonify("Business disabled"), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(str(e)), 520
+
+
+# ---------------------
+#     DISABLE USER
+# ---------------------
+
+@api.route("/disable_user", methods=["POST"])
+@require_auth
+@require_role("admin")
+def disable_user_route(current_user_id):
+
+    try:
+        data = request.get_json() or {}
+
+        user_id = data.get("user_id")
+
+        user = Account.query.get(user_id)
+
+        if not user:
+            return jsonify("User not found"), 404
+    
+        from . import db
+
+        user.deleted_at = db.func.now()
+        db.session.commit()
+
+        return jsonify("User is disabled"), 200
+    
+    except Exception as e:
+        return jsonify(str(e)), 520
+
+
 
 # -------------------------
 #     EXECUTE TRANSFER
