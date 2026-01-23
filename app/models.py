@@ -32,6 +32,11 @@ class Account(db.Model):
         nullable=True
     )
 
+    deleted_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
     username = db.Column(
         db.String(25), 
         nullable=False, 
@@ -76,6 +81,11 @@ class BusinessAccount(db.Model):
     pin_hash = db.Column(
         db.String(255), 
         nullable=False
+    )
+    
+    deleted_at = db.Column(
+        db.DateTime,
+        nullable=True
     )
 
     owner_id = db.Column(
