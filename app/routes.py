@@ -113,6 +113,7 @@ def create_user_route(current_user_id):
 @require_auth
 @require_role("admin")
 def create_business_route(current_user_id):
+    from . import db
     try:
         data = request.get_json() or {}
 
@@ -149,7 +150,7 @@ def create_business_route(current_user_id):
         new_business_account.set_pin(pin)
 
         
-        from . import db
+        
         db.session.add(new_business_account)
         db.session.flush()
 
@@ -215,13 +216,13 @@ def can_create_business(user_id, limit=1):
 @require_auth
 @require_role("admin")
 def disable_business_route(current_user_id):
+    from . import db
     try:
         data = request.get_json() or {}
 
         business_id = data.get("business_id")
 
-        from . import db
-
+        
         business = BusinessAccount.query.get(business_id)
         if not business or business.deleted_at is not None:
             return jsonify("Business not found"), 404
