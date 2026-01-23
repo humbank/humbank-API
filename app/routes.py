@@ -206,7 +206,7 @@ def create_business_route(current_user_id):
 #     BUSINESS CREATION HELPER
 # --------------------------------
 def can_create_business(user_id, limit=1):
-    active_count = BusinessAccount.query.filter_by(BusinessAccount.owner_id==user_id, BusinessAccount.deleted_at.is_(None)).count()
+    active_count = BusinessAccount.query.filter(BusinessAccount.owner_id==user_id, BusinessAccount.deleted_at.is_(None)).count()
     return active_count < limit
 
 # --------------------------------
