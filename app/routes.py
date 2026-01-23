@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import get_jwt_identity
+from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
 from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
@@ -196,6 +197,10 @@ def create_business_route(current_user_id):
         db.session.commit()
 
         return jsonify({"message": "Business created", "id": new_business_account.id}), 201
+    
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify("Business name already exists"), 400
     
 
     except Exception as e:
