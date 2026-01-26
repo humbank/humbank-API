@@ -31,7 +31,7 @@ def username_exists(username):
     
     return result is not None
 
-def get_balance(user_id):
+def get_user_balance(user_id):
     try:
         if not (user_id and id_exists(user_id)):
             raise Exception("Missing requirements or id not existing")
@@ -215,6 +215,33 @@ def get_user_id_by_username(username):
     
     except Exception as e:
         return str(e)
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+# ---------------------------------
+#       GET BUSINESS ID BY USER ID
+# ---------------------------------
+def get_business_id_by_user_id(user_id):
+    try:
+        if not user_id and not id_exists(user_id):
+            raise Exception("Missing Credentials")
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+        
+        sql = "select id from business_accounts where owner_id = %s;"
+
+        cursor.execute(sql, (user_id, ))
+
+        business_id = cursor.fetchone()
+
+        return business_id["id"]
+
+    except Exception as e:
+        return str(e)
+    
     finally:
         cursor.close()
         conn.close()

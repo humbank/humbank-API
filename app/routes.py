@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
-from .db_raw import get_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
+from .db_raw import get_business_id_by_user_id, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
 from datetime import datetime
 import json
 import os
@@ -47,17 +47,29 @@ def login():
 
 
 # -------------------------
-#       GET BALANCE
+#       GET USER BALANCE
 # -------------------------
-@api.route("/get_balance", methods=["GET"])
+@api.route("/get_user_balance", methods=["GET"])
 @require_auth
 def get_balance_route(current_user_id):
     try:
-        balance = get_balance(current_user_id)
+        balance = get_user_balance(current_user_id)
         return jsonify(balance), 200
     except Exception as e:
         return jsonify(str(e)), 520
 
+
+# ------------------------------
+#       GET BUSINESS ID
+# ------------------------------
+@api.route("/get_business_id", methods=["GET"])
+@require_auth
+def get_balance_route(current_user_id):
+    try:
+        balance = get_business_id_by_user_id(current_user_id)
+        return jsonify(balance), 200
+    except Exception as e:
+        return jsonify(str(e)), 520
 
 # -------------------------
 #       CREATE USER
