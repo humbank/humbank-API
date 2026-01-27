@@ -30,6 +30,9 @@ def login():
         
         if not user:
             return jsonify("User not found"), 404
+        
+        if not user.pin_hash:
+            return jsonify("User has no PIN set"), 400
 
 
         # Verify PIN hash
