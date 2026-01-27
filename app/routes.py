@@ -41,7 +41,7 @@ def login():
         # Create token
         token = generate_token(username)
 
-        return jsonify(token, user_id), 200
+        return jsonify({"token": token, "user_id": user_id}), 200
 
     except Exception as e:
         return jsonify(str(e)), 520
