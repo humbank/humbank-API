@@ -56,7 +56,7 @@ def login():
 # -------------------------
 @api.route("/get_user_balance", methods=["GET"])
 @require_auth
-def get_balance_route(current_username):
+def get_user_balance_route(current_username):
     try:
         balance = get_user_balance(current_username)
         return jsonify(balance), 200
@@ -69,7 +69,7 @@ def get_balance_route(current_username):
 # ------------------------------
 @api.route("/get_business_id", methods=["GET"])
 @require_auth
-def get_balance_route(current_user_id):
+def get_business_balance_route(current_user_id):
     try:
         balance = get_business_id_by_user_id(current_user_id)
         return jsonify(balance), 200
