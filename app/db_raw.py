@@ -246,3 +246,27 @@ def get_business_id_by_user_id(user_id):
     finally:
         cursor.close()
         conn.close()
+
+# ---------------------------------
+#       GET BUSINESS BALANCE
+# ---------------------------------
+def get_business_balance(username):
+    try:
+        if not (username and username_exists(username)):
+            raise Exception("Missing requirements or id not existing")
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = "select balance from business_accounts where owner_username = %s;"
+
+        cursor.execute(sql, (username,))
+        results = cursor.fetchone()
+
+        return results
+
+    except Exception as e:
+        return str(e)
+    finally:
+        cursor.close()
+        conn.close()
