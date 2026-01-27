@@ -14,7 +14,7 @@ def getBank():
 def id_exists(id):
     conn = getBank()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM accounts WHERE id = %s;", (id,))
+    cursor.execute("select id from accounts where id = %s;", (id,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -24,12 +24,24 @@ def id_exists(id):
 def username_exists(username):
     conn = getBank()
     cursor = conn.cursor()
-    cursor.execute("SELECT username FROM accounts WHERE username = %s;", (username,))
+    cursor.execute("select username from accounts where username = %s;", (username,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
     
     return result is not None
+
+def business_name_exists(business_name):
+    conn = getBank()
+    cursor = conn.cursor()
+    cursor.execute("select business_name from business_accounts where business_name = %s;", (business_name,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return result is None
+
+
 
 def get_user_balance(username):
     try:
@@ -220,6 +232,7 @@ def get_user_id_by_username(username):
     finally:
         cursor.close()
         conn.close()
+
 
 # ---------------------------------
 #       GET BUSINESS ID BY USER ID

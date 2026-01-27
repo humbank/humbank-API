@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
-from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username
+from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username, username_exists, business_name_exists
 from datetime import datetime
 import json
 import os
@@ -82,7 +82,7 @@ def get_business_balance_route(current_username):
 @api.route("/create_user", methods=["POST"])
 @require_auth
 @require_role("admin")
-def create_user_route(current_user_id):
+def create_user_route(current_username):
     try:
         data = request.get_json() or {}
 
@@ -117,7 +117,7 @@ def create_user_route(current_user_id):
         db.session.add(new_account)
         db.session.commit()
 
-        return jsonify({"message": "User created", "id": new_account.id}), 201
+        return jsonify({"message": "User created", "id": new_account.id, "username": username}), 201
 
 
     except Exception as e:
@@ -130,7 +130,7 @@ def create_user_route(current_user_id):
 @api.route("/create_business", methods=["POST"])
 @require_auth
 @require_role("admin")
-def create_business_route(current_user_id):
+def create_business_route(current_username):
     from . import db
     try:
         data = request.get_json() or {}
@@ -150,20 +150,26 @@ def create_business_route(current_user_id):
             return jsonify("Business name must be 3-25 characters, "
             "underscores or numbers only"), 400
         
-        owner_id = get_user_id_by_username(owner_username)
+        if not business_name_exists(business_name):
+            return jsonify("Business name already taken"), 400
 
-        if not owner_id:
+
+
+        if not username_exists(owner_username):
             return jsonify("User not found"), 404
-
-        if not can_create_business(owner_id, limit=1):
+        
+        if not can_create_business(owner_username, limit=1):
             return jsonify("Owner already has maximum businesses"), 403
         
-        start_balance = 0
+        owner_id = get_user_id_by_username(owner_username)
+        
+        START_BALANCE = 0
         
         new_business_account = BusinessAccount(
             business_name = business_name,
             owner_id = owner_id,
-            balance=start_balance,
+            owner_username = owner_username,
+            balance=START_BALANCE,
         )
         new_business_account.set_pin(pin)
 
@@ -206,6 +212,7 @@ def create_business_route(current_user_id):
 
         membership = BusinessMember(
             user_id=owner_id,
+            username = owner_username,
             business_id=new_business_account.id,
             role="owner"
         )
@@ -227,8 +234,8 @@ def create_business_route(current_user_id):
 # --------------------------------
 #     BUSINESS CREATION HELPER
 # --------------------------------
-def can_create_business(user_id, limit=1):
-    active_count = BusinessAccount.query.filter(BusinessAccount.owner_id==user_id, BusinessAccount.deleted_at.is_(None)).count()
+def can_create_business(username, limit=1):
+    active_count = BusinessAccount.query.filter(BusinessAccount.owner_username==username, BusinessAccount.deleted_at.is_(None)).count()
     return active_count < limit
 
 # --------------------------------

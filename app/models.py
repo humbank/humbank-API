@@ -94,6 +94,12 @@ class BusinessAccount(db.Model):
         nullable=False
     )
 
+    owner_username = db.Column(
+        db.String(25), 
+        nullable=False, 
+        unique=True
+    )
+
     owner = db.relationship("Account", backref="owned_businesses")
 
     def set_pin(self, pin: str):
@@ -115,6 +121,12 @@ class BusinessMember(db.Model):
         db.Integer,
         db.ForeignKey("accounts.id"),
         nullable=False
+    )
+
+    username = db.Column(
+        db.String(25), 
+        nullable=False, 
+        unique=True
     )
 
     role = db.Column(
