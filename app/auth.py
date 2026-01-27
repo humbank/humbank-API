@@ -105,7 +105,7 @@ def require_role(*allowed_roles):
             from .models import Account
             
             username = get_jwt_identity()
-            user = Account.query.get(username=username).first()
+            user = Account.query.filter_by(username=username).first()
 
             if not user or user.role not in allowed_roles:
                 return jsonify({"Error": "Forbidden"}), 403
