@@ -26,7 +26,7 @@ def login():
         pin = data["pin"]
 
         # Fetch user via SQLAlchemy model and username
-        user = Account.query.filter_by(username = username).first()
+        user = Account.query.filter_by(username=username).first()
         
         if not user:
             return jsonify("User not found"), 404
@@ -39,7 +39,8 @@ def login():
         user_id = user.id
 
         # Create token
-        token = generate_token(user_id)
+        token = generate_token(username)
+
         return jsonify(token, user_id), 200
 
     except Exception as e:
@@ -51,9 +52,9 @@ def login():
 # -------------------------
 @api.route("/get_user_balance", methods=["GET"])
 @require_auth
-def get_balance_route(current_user_id):
+def get_balance_route(current_username):
     try:
-        balance = get_user_balance(current_user_id)
+        balance = get_user_balance(current_username)
         return jsonify(balance), 200
     except Exception as e:
         return jsonify(str(e)), 520

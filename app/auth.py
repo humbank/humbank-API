@@ -21,10 +21,10 @@ def hash_pin(pin):
 # -----------------------------
 # 1. Create a JWT when user logs in
 # -----------------------------
-def generate_token(account_id):
+def generate_token(username):
     # Token contains the user ID
     token = create_access_token(
-        identity=str(account_id),
+        identity=str(username),
         expires_delta=timedelta(hours=12)  # token valid for 12h
     )
     return token
@@ -50,7 +50,7 @@ def require_auth(func):
     """
     Decorator that:
     - Verifies JWT is present
-    - Injects `current_user_id` into route
+    - Injects `current_username` into route
     """
 
     @wraps(func)
@@ -60,10 +60,10 @@ def require_auth(func):
             verify_jwt_in_request()
 
             # Get user ID from the token
-            user_id = get_jwt_identity()
+            username = get_jwt_identity()
 
             # Pass it into the route as a keyword arg
-            return func(current_user_id=user_id, *args, **kwargs)
+            return func(current_username=username, *args, **kwargs)
 
         except Exception as e:
             return jsonify(str(e)), 401
@@ -104,8 +104,8 @@ def require_role(*allowed_roles):
 
             from .models import Account
             
-            user_id = get_jwt_identity()
-            user = Account.query.get(user_id)
+            username = get_jwt_identity()
+            user = Account.query.get(username=username).first()
 
             if not user or user.role not in allowed_roles:
                 return jsonify({"Error": "Forbidden"}), 403

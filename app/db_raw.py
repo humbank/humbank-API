@@ -31,17 +31,17 @@ def username_exists(username):
     
     return result is not None
 
-def get_user_balance(user_id):
+def get_user_balance(username):
     try:
-        if not (user_id and id_exists(user_id)):
+        if not (username and username_exists(username)):
             raise Exception("Missing requirements or id not existing")
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
 
-        sql = "select balance from accounts where id = %s;"
+        sql = "select balance from accounts where username = %s;"
 
-        cursor.execute(sql, (user_id,))
+        cursor.execute(sql, (username,))
         results = cursor.fetchone()
 
         return results
@@ -53,7 +53,7 @@ def get_user_balance(user_id):
         conn.close()
 
 # Perform a SAFE money transfer (atomic)
-def execute_transfer(payer_id, issuer_id, amount, transaction_id):
+def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, describtion):
     """
     Atomic payment transfer:
     - Locks both payer and issuer rows using SELECT ... FOR UPDATE
@@ -66,13 +66,14 @@ def execute_transfer(payer_id, issuer_id, amount, transaction_id):
     cursor = conn.cursor(dictionary=True)
 
     try:
+        describtion = describtion or "UNKNOWN REASON!"
         # Start transaction
         conn.start_transaction()
 
         # Lock payer
         cursor.execute(
-            "SELECT balance FROM accounts WHERE id = %s FOR UPDATE",
-            (payer_id,)
+            "select balance from accounts where username = %s for upate",
+            (payer_username,)
         )
         payer = cursor.fetchone()
         if not payer:
@@ -83,8 +84,8 @@ def execute_transfer(payer_id, issuer_id, amount, transaction_id):
 
         # Lock issuer
         cursor.execute(
-            "SELECT balance FROM accounts WHERE id = %s FOR UPDATE",
-            (issuer_id,)
+            "select balance from accounts where id = %s for update",
+            (issuer_username,)
         )
         issuer = cursor.fetchone()
         if not issuer:
@@ -92,18 +93,18 @@ def execute_transfer(payer_id, issuer_id, amount, transaction_id):
 
         # Update balances
         cursor.execute(
-            "UPDATE accounts SET balance = balance - %s WHERE id = %s",
-            (amount, payer_id)
+            "update accounts set balance = balance - %s where username = %s",
+            (amount, payer_username)
         )
         cursor.execute(
-            "UPDATE accounts SET balance = balance + %s WHERE id = %s",
-            (amount, issuer_id)
+            "update accounts set balance = balance + %s where username = %s",
+            (amount, issuer_username)
         )
 
         # Insert transaction
         cursor.execute(
-            "INSERT INTO transactions (transaction_id, payer_id, issuer_id, amount) VALUES (%s, %s, %s, %s)",
-            (transaction_id, payer_id, issuer_id, amount)
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
+            (transaction_id, payer_username, issuer_username, amount, describtion)
         )
 
         conn.commit()
@@ -225,7 +226,7 @@ def get_user_id_by_username(username):
 # ---------------------------------
 def get_business_id_by_user_id(user_id):
     try:
-        if not user_id and not id_exists(user_id):
+        if not (user_id and id_exists(user_id)):
             raise Exception("Missing Credentials")
         
         conn = getBank()
