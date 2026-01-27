@@ -16,6 +16,7 @@ api = Blueprint("api", __name__)
 # -------------------------
 @api.route("/login", methods=["POST"])
 def login():
+    print("test")
     try:
         data = request.get_json()
 
