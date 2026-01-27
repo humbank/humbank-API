@@ -36,12 +36,12 @@ def login():
         if not check_pin(user.pin_hash, pin):
             return jsonify("Invalid PIN"), 401
         
-        user_id = user.id
+        #user_id = user.id
 
         # Create token
         token = generate_token(username)
 
-        return jsonify({"token": token, "user_id": user_id}), 200
+        return jsonify({"token": token, "username": username}), 200
 
     except Exception as e:
         return jsonify(str(e)), 520
