@@ -59,8 +59,10 @@ def get_user_balance(username):
 
         return results
 
-    except Exception as e:
-        return str(e)
+    except Exception:
+        conn.rollback()
+        raise
+
     finally:
         cursor.close()
         conn.close()
@@ -151,8 +153,10 @@ def get_todays_transactions(username, start_of_day, now):
         results = cursor.fetchall()
 
         return results
-    except Exception as e:
-        return str(e)
+    
+    except Exception:
+        conn.rollback()
+        raise
         
     finally:
         cursor.close()
@@ -179,8 +183,9 @@ def transactions_amount(username):
 
         return results
 
-    except Exception as e:
-        return str(e)
+    except Exception:
+        conn.rollback()
+        raise
         
     finally:
         cursor.close()
@@ -208,8 +213,9 @@ def get_user_id_by_username(username):
 
         return results["id"]
     
-    except Exception as e:
-        return str(e)
+    except Exception:
+        conn.rollback()
+        raise
     
     finally:
         cursor.close()
@@ -235,8 +241,9 @@ def get_business_id_by_username(username):
 
         return business_id["id"]
 
-    except Exception as e:
-        return str(e)
+    except Exception:
+        conn.rollback()
+        raise
     
     finally:
         cursor.close()
@@ -260,8 +267,10 @@ def get_business_balance(username):
 
         return results
 
-    except Exception as e:
-        return str(e)
+    except Exception:
+        conn.rollback()
+        raise
+    
     finally:
         cursor.close()
         conn.close()
