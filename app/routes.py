@@ -386,12 +386,12 @@ def execute_transfer_route(current_username):
         issuer_username = data.get("issuer_username")
         amount = data.get("amount")
         transaction_id = data.get("transaction_id")
-        describtion = data.get("describtion")
+        description = data.get("description")
 
-        if not issuer_username or not amount or not transaction_id or not describtion:
+        if not issuer_username or not amount or not transaction_id or not description:
             return jsonify("Missing fields"), 400
 
-        result = execute_transfer(payer_username, issuer_username, amount, transaction_id, describtion)
+        result = execute_transfer(payer_username, issuer_username, amount, transaction_id, description)
 
         if result is True:
             return jsonify("Transfer completed"), 200

@@ -71,7 +71,7 @@ def get_user_balance(username):
 # ---------------------------------
 #       EXECUTE TRANSFER
 # ---------------------------------
-def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, describtion):
+def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, description):
 
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
@@ -114,7 +114,7 @@ def execute_transfer(current_username, payer_username, issuer_username, amount, 
         # Insert transaction
         cursor.execute(
             "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
-            (transaction_id, payer_username, issuer_username, amount, describtion)
+            (transaction_id, payer_username, issuer_username, amount, description)
         )
 
         conn.commit()
