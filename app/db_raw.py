@@ -71,7 +71,7 @@ def get_user_balance(username):
 # ---------------------------------
 #       EXECUTE TRANSFER
 # ---------------------------------
-def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, description):
+def execute_transfer(payer_username, issuer_username, amount, transaction_id, description):
 
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
@@ -82,7 +82,7 @@ def execute_transfer(current_username, payer_username, issuer_username, amount, 
 
         # Lock payer
         cursor.execute(
-            "select balance from accounts where username = %s for upate",
+            "select balance from accounts where username = %s for update",
             (payer_username,)
         )
         payer = cursor.fetchone()
@@ -94,7 +94,7 @@ def execute_transfer(current_username, payer_username, issuer_username, amount, 
 
         # Lock issuer
         cursor.execute(
-            "select balance from accounts where id = %s for update",
+            "select balance from accounts where username = %s for update",
             (issuer_username,)
         )
         issuer = cursor.fetchone()
@@ -120,9 +120,9 @@ def execute_transfer(current_username, payer_username, issuer_username, amount, 
         conn.commit()
         return True
 
-    except Exception as e:
+    except Exception:
         conn.rollback()
-        return str(e)
+        raise
 
     finally:
         cursor.close()
