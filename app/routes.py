@@ -425,10 +425,7 @@ def todays_transactions_route(current_username):
 @require_auth
 def transactions_amount(current_username):
     try:
-        now = datetime.now()
-        start = datetime.combine(now.date(), datetime.min.time())
-
-        results = transactions_amount(current_username, start, now)
+        results = transactions_amount(current_username)
         return jsonify(results), 200
     
     except Exception as e:
