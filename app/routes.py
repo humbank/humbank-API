@@ -4,11 +4,27 @@ from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
 from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username, username_exists, business_name_exists
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import json
 import os
 
 api = Blueprint("api", __name__)
+
+
+# -------------------------
+#        TIMEZONE HELPER    
+# -------------------------
+GERMAN_TZ = ZoneInfo("Europe/Berlin")
+
+def isoformat_german(dt):
+    if dt is None:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone(GERMAN_TZ).isoformat()
 
 
 # -------------------------
@@ -80,7 +96,7 @@ def get_user_account_route(current_username):
                         "username": user.username, 
                         "balance": user.balance, 
                         "role": user.role,  
-                        "updated_at": user.updated_at, 
+                        "updated_at": isoformat_german(user.updated_at), 
                         "full_name": user.full_name()}
                     ), 200
     
