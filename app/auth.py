@@ -8,7 +8,6 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
-from .models import Account
 
 
 
@@ -62,6 +61,8 @@ def require_auth(func):
 
             # Get user ID from the token
             username = get_jwt_identity()
+
+            from .models import Account
 
             user = Account.query.filter_by(username=username).first()
 
