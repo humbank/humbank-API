@@ -9,8 +9,7 @@ def getBank():
         user=current_app.config["MYSQL_USER"],
         password=current_app.config["MYSQL_PASS"],
         database=current_app.config["MYSQL_DB"],
-        autocommit=False,
-        charset="utf8mb4"
+        autocommit=False  # IMPORTANT: we control commits manually
     )
 
 def id_exists(id):
@@ -56,12 +55,9 @@ def get_user_balance(username):
         sql = "select balance from accounts where username = %s;"
 
         cursor.execute(sql, (username,))
-        result = cursor.fetchone()
+        results = cursor.fetchone()
 
-        if not result:
-            raise Exception("User not found")
-
-        return float(result["balance"])
+        return results["balance"]
 
     except Exception:
         conn.rollback()
