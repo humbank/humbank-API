@@ -55,9 +55,14 @@ def get_user_balance(username):
         sql = "select balance from accounts where username = %s;"
 
         cursor.execute(sql, (username,))
-        results = cursor.fetchone()
+        row = cursor.fetchone()
 
-        return results["balance"]
+        if not row:
+            raise Exception("User not found")
+
+        return {
+            "balance": float(row["balance"])
+        }
 
     except Exception:
         conn.rollback()
