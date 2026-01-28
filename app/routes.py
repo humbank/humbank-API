@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
-from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, get_user_by_id, get_user_id_by_username, username_exists, business_name_exists
+from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, username_exists, business_name_exists
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
