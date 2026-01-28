@@ -39,7 +39,9 @@ class Account(db.Model):
 
     updated_at = db.Column(
         db.DateTime,
-        nullable=False
+        nullable=False,
+        server_default=db.text("CURRENT_TIMESTAMP"),
+        onupdate=db.text("CURRENT_TIMESTAMP")
     )
 
     username = db.Column(
