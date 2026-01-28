@@ -79,8 +79,7 @@ def get_user_account_route(current_username):
         return jsonify({"user_id": user.id, 
                         "username": user.username, 
                         "balance": user.balance, 
-                        "role": user.role, 
-                        "created_at": user.created_at, 
+                        "role": user.role,  
                         "updated_at": user.updated_at, 
                         "full_name": user.full_name()}
                     ), 200
