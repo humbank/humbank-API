@@ -1,6 +1,7 @@
 import mysql.connector
 from flask import current_app
 
+
 # Create a fresh MySQL connection using credentials from config
 def getBank():
     return mysql.connector.connect(
@@ -63,6 +64,9 @@ def get_user_balance(username):
     finally:
         cursor.close()
         conn.close()
+
+
+
 
 # Perform a SAFE money transfer (atomic)
 def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, describtion):

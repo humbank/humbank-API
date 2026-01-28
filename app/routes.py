@@ -62,6 +62,31 @@ def get_user_balance_route(current_username):
         return jsonify(balance), 200
     except Exception as e:
         return jsonify(str(e)), 520
+    
+# -------------------------
+#       GET USER ACCOUNT
+# -------------------------
+@api.route("/get_user_account", methods=["GET"])
+@require_auth
+def get_user_account_route(current_username):
+    try:
+        user = Account.query.filter_by(username=current_username).first()
+
+        if not user:
+            return jsonify("User not found"), 404
+        
+        
+        return jsonify({"user_id": user.id, 
+                        "username": user.username, 
+                        "balance": user.balance, 
+                        "role": user.role, 
+                        "created_at": user.created_at, 
+                        "updated_at": user.updated_at, 
+                        "full_name": user.full_name()}
+                    ), 200
+    
+    except Exception as e:
+        return jsonify(str(e)), 520
 
 
 # ------------------------------

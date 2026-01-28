@@ -8,6 +8,7 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
+from .models import Account
 
 
 
@@ -61,6 +62,14 @@ def require_auth(func):
 
             # Get user ID from the token
             username = get_jwt_identity()
+
+            user = Account.query.filter_by(username=username).first()
+
+            if not user:
+                return jsonify("User not found"), 401
+            
+            if user.deleted_at is not None:
+                return jsonify("Account disabled"), 401
 
             # Pass it into the route as a keyword arg
             return func(current_username=username, *args, **kwargs)

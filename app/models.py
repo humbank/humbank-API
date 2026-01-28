@@ -37,6 +37,11 @@ class Account(db.Model):
         nullable=True
     )
 
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False
+    )
+
     username = db.Column(
         db.String(25), 
         nullable=False, 
