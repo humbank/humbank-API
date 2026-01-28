@@ -304,7 +304,7 @@ def can_create_business(username, limit=1):
 @api.route("/disable_business", methods=["POST"])
 @require_auth
 @require_role("admin")
-def disable_business_route(current_user_id):
+def disable_business_route(current_username):
     from . import db
     try:
         data = request.get_json() or {}
@@ -349,7 +349,7 @@ def disable_business_route(current_user_id):
 @api.route("/disable_user", methods=["POST"])
 @require_auth
 @require_role("admin")
-def disable_user_route(current_user_id):
+def disable_user_route(current_username):
 
     try:
         data = request.get_json() or {}
@@ -378,19 +378,20 @@ def disable_user_route(current_user_id):
 # -------------------------
 @api.route("/execute_transfer", methods=["POST"])
 @require_auth
-def execute_transfer_route(current_user_id):
+def execute_transfer_route(current_username):
     try:
         data = request.get_json() or {}
 
-        payer_id = current_user_id  # The user sending money
-        issuer_id = data.get("issuer_id")
+        payer_username = current_username
+        issuer_username = data.get("issuer_username")
         amount = data.get("amount")
         transaction_id = data.get("transaction_id")
+        describtion = data.get("describtion")
 
-        if not issuer_id or not amount or not transaction_id:
+        if not issuer_username or not amount or not transaction_id or not describtion:
             return jsonify("Missing fields"), 400
 
-        result = execute_transfer(payer_id, issuer_id, amount, transaction_id)
+        result = execute_transfer(payer_username, issuer_username, amount, transaction_id, describtion)
 
         if result is True:
             return jsonify("Transfer completed"), 200
@@ -406,12 +407,12 @@ def execute_transfer_route(current_user_id):
 # -------------------------
 @api.route("/get_todays_transactions", methods=["GET"])
 @require_auth
-def todays_transactions_route(current_user_id):
+def todays_transactions_route(current_username):
     try:
         now = datetime.now()
         start = datetime.combine(now.date(), datetime.min.time())
 
-        results = get_todays_transactions(current_user_id, start, now)
+        results = get_todays_transactions(current_username, start, now)
         return jsonify(results), 200
 
     except Exception as e:
@@ -422,44 +423,22 @@ def todays_transactions_route(current_user_id):
 # ----------------------------
 @api.route("/transactions_amount", methods=["GET"])
 @require_auth
-def transactions_amount(current_user_id):
+def transactions_amount(current_username):
     try:
         now = datetime.now()
         start = datetime.combine(now.date(), datetime.min.time())
 
-        results = transactions_amount(current_user_id, start, now)
+        results = transactions_amount(current_username, start, now)
         return jsonify(results), 200
     
     except Exception as e:
         return jsonify(str(e)), 520
 
-# -------------------------
-#       GET USER BY ID
-# -------------------------
-@api.route("/get_user_by_id", methods=["POST"])
-@require_auth
-def get_user_by_id_route(current_user_id):
-    try:
-        data = request.get_json() or {}
-
-        user_id = data["id"]
-
-        if not user_id:
-            return jsonify("Missing id"), 400
-
-        result = get_user_by_id(user_id=user_id)
-
-        if not result:
-            return jsonify("User not found"), 404
-
-        return jsonify(result), 200
 
 
-    
-    except Exception as e:
-        return jsonify(str(e)), 520
-
-
+# ----------------------------
+#  CHECK TOKEN VALIDITY
+# ----------------------------
 @api.route("/check_token_validity", methods=["GET"])
 @require_auth
 def check_token_validity_route(current_user_id):

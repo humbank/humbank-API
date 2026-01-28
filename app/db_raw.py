@@ -68,23 +68,15 @@ def get_user_balance(username):
 
 
 
-
-
-# Perform a SAFE money transfer (atomic)
+# ---------------------------------
+#       EXECUTE TRANSFER
+# ---------------------------------
 def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, describtion):
-    """
-    Atomic payment transfer:
-    - Locks both payer and issuer rows using SELECT ... FOR UPDATE
-    - Checks payer balance
-    - Updates both balances
-    - Inserts transaction record
-    - Commits or rolls back
-    """
+
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
 
     try:
-        describtion = describtion or "UNKNOWN REASON!"
         # Start transaction
         conn.start_transaction()
 
@@ -137,10 +129,12 @@ def execute_transfer(current_username, payer_username, issuer_username, amount, 
         conn.close()
 
 
-# Load today's transactions for a user (raw SQL)
-def get_todays_transactions(user_id, start_of_day, now):
+# ---------------------------------------
+#       GET TRANSACTIONS FROM DATE
+# ---------------------------------------
+def get_todays_transactions(username, start_of_day, now):
     try:
-        if not (user_id and start_of_day and now and id_exists(user_id)):
+        if not (username and start_of_day and now and username_exists(username)):
             raise Exception("Missing requirements or id not existing")
         
         conn = getBank()
@@ -153,7 +147,7 @@ def get_todays_transactions(user_id, start_of_day, now):
             ORDER BY transaction_date DESC
         """
 
-        cursor.execute(sql, (user_id, user_id, start_of_day, now))
+        cursor.execute(sql, (username, username, start_of_day, now))
         results = cursor.fetchall()
 
         return results
@@ -164,10 +158,12 @@ def get_todays_transactions(user_id, start_of_day, now):
         cursor.close()
         conn.close()
 
-#get the amount of transactions done today
-def transactions_amount(user_id):
+# ------------------------------------
+#       GET TRANSACTIONS DONE TODAY
+# ------------------------------------
+def transactions_amount(username):
     try:
-        if not (user_id and id_exists(user_id)):
+        if not (username and username_exists(username)):
             raise Exception("Missing requirements or id not existing")
         
         conn = getBank()
@@ -178,7 +174,7 @@ def transactions_amount(user_id):
             WHERE (payer_id = %s OR issuer_id = %s)
         """
 
-        cursor.execute(sql, (user_id, user_id))
+        cursor.execute(sql, (username, username))
         results = cursor.fetchone()
 
         return results
@@ -190,70 +186,48 @@ def transactions_amount(user_id):
         cursor.close()
         conn.close()
 
-#get the Users first and last name via the user_id
-def get_user_by_id(user_id):
-    try:
-        if not (user_id and id_exists(user_id)):
-            raise Exception("Missing requirements or id not existing")
-        
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
 
-        sql = """
-                select first_name, last_name from accounts
-                where id = %s;"""
-        
-        cursor.execute(sql, (user_id,))
-        results = cursor.fetchone()
 
-        return results
+# #get the user id by the username
+# def get_user_id_by_username(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise Exception("Missing requirements or username not existing")
+        
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
+
+#         sql = """
+#                 select id from accounts
+#                 where username = %s;"""
+        
+#         cursor.execute(sql, (username,))
+#         results = cursor.fetchone()
+
+#         return results["id"]
     
-    except Exception as e:
-        return str(e)
-    finally:
-        cursor.close()
-        conn.close()
+#     except Exception as e:
+#         return str(e)
+    
+#     finally:
+#         cursor.close()
+#         conn.close()
 
-#get the user id by the username
-def get_user_id_by_username(username):
+
+# -----------------------------------
+#       GET BUSINESS ID BY USERNAME
+# -----------------------------------
+def get_business_id_by_username(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing requirements or username not existing")
-        
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
-
-        sql = """
-                select id from accounts
-                where username = %s;"""
-        
-        cursor.execute(sql, (username,))
-        results = cursor.fetchone()
-
-        return results["id"]
-    
-    except Exception as e:
-        return str(e)
-    
-    finally:
-        cursor.close()
-        conn.close()
-
-
-# ---------------------------------
-#       GET BUSINESS ID BY USER ID
-# ---------------------------------
-def get_business_id_by_user_id(user_id):
-    try:
-        if not (user_id and id_exists(user_id)):
             raise Exception("Missing Credentials")
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
         
-        sql = "select id from business_accounts where owner_id = %s;"
+        sql = "select id from business_accounts where owner_username = %s;"
 
-        cursor.execute(sql, (user_id, ))
+        cursor.execute(sql, (username, ))
 
         business_id = cursor.fetchone()
 
