@@ -162,9 +162,9 @@ def get_todays_transactions(username, start_of_day, now):
         cursor.close()
         conn.close()
 
-# ------------------------------------
-#       GET TRANSACTIONS DONE TODAY
-# ------------------------------------
+# --------------------------------------
+#       GET AMOUNT OF ALL TRANSACTIONS
+# --------------------------------------
 def transactions_amount(username):
     try:
         if not (username and username_exists(username)):
@@ -175,7 +175,7 @@ def transactions_amount(username):
 
         sql = """
             SELECT COUNT(*) as trans_amount from transactions
-            WHERE (payer_id = %s OR issuer_id = %s)
+            WHERE (payer_username = %s OR issuer_username = %s)
         """
 
         cursor.execute(sql, (username, username))
@@ -270,7 +270,7 @@ def get_business_balance(username):
     except Exception:
         conn.rollback()
         raise
-    
+
     finally:
         cursor.close()
         conn.close()
