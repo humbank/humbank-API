@@ -68,6 +68,8 @@ def get_user_balance(username):
 
 
 
+
+
 # Perform a SAFE money transfer (atomic)
 def execute_transfer(current_username, payer_username, issuer_username, amount, transaction_id, describtion):
     """

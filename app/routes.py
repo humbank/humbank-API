@@ -102,7 +102,27 @@ def get_user_account_route(current_username):
     
     except Exception as e:
         return jsonify(str(e)), 520
+    
+# -----------------------------
+#       GET ALL USER ACCOUNTS
+# -----------------------------
+@api.route("/get_all_users", methods=["GET"])
+@require_auth
+def get_all_users_route(current_username):
+    users = Account.query.filter(Account.deleted_at.is_(None)).all()
 
+    return jsonify([
+        {
+            "id": u.id,
+            "username": u.username,
+            "role": u.role,
+            "balance": float(u.balance),
+            "deleted_at": u.deleted_at,
+            "updated_at": isoformat_german(u.updated_at),
+            "full_name": u.full_name(),
+        }
+        for u in users
+    ]), 200
 
 # ------------------------------
 #       GET BUSINESS BALANCE
