@@ -57,7 +57,7 @@ def get_user_balance(username):
         cursor.execute(sql, (username,))
         results = cursor.fetchone()
 
-        return results
+        return results["balance"]
 
     except Exception:
         conn.rollback()
