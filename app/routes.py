@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
-from .auth import check_pin, generate_token, require_auth, normalize_username, validate_username, normalize_business_name, validate_business_name, require_role
-from .db_raw import get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, username_exists, business_name_exists, get_user_id_by_username
+from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
+                   normalize_business_name, validate_business_name, require_role)
+from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
+                     username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business)
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
@@ -92,8 +94,7 @@ def get_user_account_route(current_username):
             return jsonify("User not found"), 404
         
         
-        return jsonify({"user_id": user.id, 
-                        "username": user.username, 
+        return jsonify({"username": user.username, 
                         "balance": user.balance, 
                         "role": user.role,  
                         "updated_at": isoformat_german(user.updated_at), 
@@ -113,11 +114,8 @@ def get_all_users_route(current_username):
 
     return jsonify([
         {
-            "id": u.id,
             "username": u.username,
             "role": u.role,
-            "balance": float(u.balance),
-            "deleted_at": u.deleted_at,
             "updated_at": isoformat_german(u.updated_at),
             "full_name": u.full_name(),
         }
@@ -392,6 +390,35 @@ def execute_transfer_route(current_username):
             return jsonify("Missing fields"), 400
 
         result = execute_transfer(payer_username, issuer_username, amount, transaction_id, description)
+
+        if result is True:
+            return jsonify("Transfer completed"), 200
+        else:
+            return "", 400
+
+    except Exception as e:
+        return jsonify(str(e)), 520
+    
+
+# ----------------------------------
+#     EXECUTE TRANSFER TO BUSINESS
+# ----------------------------------
+@api.route("/execute_transfer_to_business", methods=["POST"])
+@require_auth
+def execute_transfer_to_business_route(current_username):
+    try:
+        data = request.get_json() or {}
+
+        payer_username = current_username
+        issuer_business_name = data.get("issuer_business_name")
+        amount = data.get("amount")
+        transaction_id = data.get("transaction_id")
+        description = data.get("description")
+
+        if not issuer_business_name or not amount or not transaction_id or not description:
+            return jsonify("Missing fields"), 400
+
+        result = execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description)
 
         if result is True:
             return jsonify("Transfer completed"), 200

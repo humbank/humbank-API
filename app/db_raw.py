@@ -131,6 +131,67 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         conn.close()
 
 
+# ------------------------------------
+#       EXECUTE TRANSFER TO BUSINESS
+# ------------------------------------
+def execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description):
+
+    conn = getBank()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Start transaction
+        conn.start_transaction()
+
+        # Lock payer
+        cursor.execute(
+            "select balance from accounts where username = %s for update",
+            (payer_username,)
+        )
+        payer = cursor.fetchone()
+        if not payer:
+            raise Exception("Payer not found")
+
+        if payer["balance"] < amount:
+            raise Exception("Insufficient funds")
+
+        # Lock issuer
+        cursor.execute(
+            "select balance from business_accounts where business_name = %s for update",
+            (issuer_business_name,)
+        )
+        issuer = cursor.fetchone()
+        if not issuer:
+            raise Exception("Issuer not found")
+
+        # Update balances
+        cursor.execute(
+            "update accounts set balance = balance - %s where username = %s",
+            (amount, payer_username)
+        )
+        cursor.execute(
+            "update business_accounts set balance = balance + %s where business_name = %s",
+            (amount, issuer_business_name)
+        )
+
+        # Insert transaction
+        cursor.execute(
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
+            (transaction_id, payer_username, issuer_business_name, amount, description)
+        )
+
+        conn.commit()
+        return True
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
 # ---------------------------------------
 #       GET TRANSACTIONS FROM DATE
 # ---------------------------------------
