@@ -9,6 +9,7 @@ def getBank():
         user=current_app.config["MYSQL_USER"],
         password=current_app.config["MYSQL_PASS"],
         database=current_app.config["MYSQL_DB"],
+        charset="utf8mb4",
         autocommit=False  # IMPORTANT: we control commits manually
     )
 

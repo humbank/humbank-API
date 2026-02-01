@@ -241,14 +241,14 @@ def create_business_route(current_username):
         deleted_file = "business_deleted.json"
         data = {}
         if os.path.exists(descr_file):
-            with open(descr_file, "r") as file:
+            with open(descr_file, "r", encoding="utf-8") as file:
                 try:
                     data = json.load(file)
                 except json.JSONDecodeError:
                     data = {}
 
         is_deleted = False
-        with open(deleted_file, "r") as file:
+        with open(deleted_file, "r", encoding="utf-8") as file:
             try:
                 contents = json.load(file)
                 if str(new_business_account.id) in contents:
@@ -320,7 +320,7 @@ def disable_business_route(current_username):
         deleted_file = "business_deleted.json"
         data = {}
         if os.path.exists(deleted_file):
-            with open(deleted_file, "r") as file:
+            with open(deleted_file, "r", encoding="utf-8") as file:
                 try:
                     data = json.load(file)
                 except json.JSONDecodeError:
