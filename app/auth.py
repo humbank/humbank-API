@@ -67,16 +67,16 @@ def require_auth(func):
             user = Account.query.filter_by(username=username).first()
 
             if not user:
-                raise APIError(message="User not found", error_code=404)
+                raise APIError(message="User not found", status_code=404)
             
             if user.deleted_at is not None:
-                raise APIError(message="User disabled", error_code=401)
+                raise APIError(message="User disabled", status_code=401)
 
             # Pass it into the route as a keyword arg
             return func(current_username=username, *args, **kwargs)
 
         except APIError as e:
-            return jsonify({e.message}), e.error_code
+            return jsonify(e.to_dict()), e.status_code
 
     return wrapper
 
@@ -111,15 +111,21 @@ def require_role(*allowed_roles):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            try:
+                from .models import Account
+                
+                username = get_jwt_identity()
+                user = Account.query.filter_by(username=username).first()
 
-            from .models import Account
+                if not user:
+                    raise APIError(message="User not found", status_code=404)
+                
+                if user.role not in allowed_roles:
+                    raise APIError(message="Entry forbidden", status_code=403)
+
+                return fn(*args, **kwargs)
             
-            username = get_jwt_identity()
-            user = Account.query.filter_by(username=username).first()
-
-            if not user or user.role not in allowed_roles:
-                return jsonify({"Error": "Forbidden"}), 403
-
-            return fn(*args, **kwargs)
+            except APIError as e:
+                return jsonify(e.to_dict()), e.status_code
         return wrapper
     return decorator

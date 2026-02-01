@@ -39,8 +39,14 @@ def login():
     try:
         data = request.get_json()
 
-        if not data or "username" not in data or "pin" not in data:
-            return jsonify("Missing Username or PIN"), 400
+        if not data:
+            raise APIError(message="Inputs are missing", status_code=400)
+        
+        if "username" not in data:
+            raise APIError(message="Username missing", status_code=400)
+        
+        if "pin" not in data:
+            raise APIError(message="Pin missing", status_code=400)
 
         username = data["username"].lower().strip()
         pin = data["pin"]
@@ -49,25 +55,23 @@ def login():
         user = Account.query.filter_by(username=username).first()
         
         if not user:
-            return jsonify("User not found"), 404
+            raise APIError(message="User not found", status_code=404)
         
         if not user.pin_hash:
-            return jsonify("User has no PIN set"), 400
+            raise APIError(message="User has no Pin set", status_code=400)
 
 
         # Verify PIN hash
         if not check_pin(user.pin_hash, pin):
-            return jsonify("Invalid PIN"), 401
+            raise APIError(message="Pin is incorrect", status_code=401)
         
-        #user_id = user.id
-
         # Create token
         token = generate_token(username)
 
         return jsonify({"token": token, "username": username}), 200
 
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 # -------------------------
@@ -79,8 +83,9 @@ def get_user_balance_route(current_username):
     try:
         balance = get_user_balance(current_username)
         return jsonify(balance), 200
-    except Exception as e:
-        return jsonify(str(e)), 520
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
     
 # -------------------------
 #       GET USER ACCOUNT
@@ -92,7 +97,7 @@ def get_user_account_route(current_username):
         user = Account.query.filter_by(username=current_username).first()
 
         if not user:
-            return jsonify("User not found"), 404
+            raise APIError(message="User not found", status_code=404)
         
         
         return jsonify({"username": user.username, 
@@ -102,8 +107,8 @@ def get_user_account_route(current_username):
                         "full_name": user.full_name()}
                     ), 200
     
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
     
 # -----------------------------
 #       GET ALL USER ACCOUNTS
@@ -111,17 +116,24 @@ def get_user_account_route(current_username):
 @api.route("/get_all_users", methods=["GET"])
 @require_auth
 def get_all_users_route(current_username):
-    users = Account.query.filter(Account.deleted_at.is_(None)).all()
+    try:
+        users = Account.query.filter(Account.deleted_at.is_(None)).all()
 
-    return jsonify([
-        {
-            "username": u.username,
-            "role": u.role,
-            "updated_at": isoformat_german(u.updated_at),
-            "full_name": u.full_name(),
-        }
-        for u in users
-    ]), 200
+        if not users:
+            raise APIError(message="Users not found", status_code=404)
+
+        return jsonify([
+            {
+                "username": u.username,
+                "role": u.role,
+                "updated_at": isoformat_german(u.updated_at),
+                "full_name": u.full_name(),
+            }
+            for u in users
+        ]), 200
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 # ------------------------------
 #       GET BUSINESS BALANCE
@@ -132,8 +144,9 @@ def get_business_balance_route(current_username):
     try:
         balance = get_business_balance(current_username)
         return jsonify(balance), 200
-    except Exception as e:
-        return jsonify(str(e)), 520
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 # -------------------------
 #       CREATE USER
@@ -150,9 +163,21 @@ def create_user_route(current_username):
         pin = data.get("pin")
         username = data.get("username")
         role = data.get("role")
-
-        if not first_name or not last_name or not pin or not username or not role:
-            return jsonify("Missing fields"), 400
+        
+        if not first_name:
+            raise APIError(message="First Name is missing", status_code=400)
+        
+        if not last_name:
+            raise APIError(message="Last Name is missing", status_code=400)
+        
+        if not pin:
+            raise APIError(message="Pin is missing", status_code=400)
+        
+        if not username:
+            raise APIError(message="Username is missing", status_code=400)
+        
+        if not role:
+            raise APIError(message="Role is missing", status_code=400)
         
         pin = str(pin)
         username = normalize_username(username=username)
@@ -179,8 +204,8 @@ def create_user_route(current_username):
         return jsonify({"message": "User created", "id": new_account.id, "username": username}), 201
 
 
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 # -------------------------
@@ -286,9 +311,9 @@ def create_business_route(current_username):
         return jsonify("Business name already exists"), 400
     
 
-    except Exception as e:
+    except APIError as e:
         db.session.rollback()
-        return jsonify(str(e)), 520
+        return jsonify(e.to_dict()), e.status_code
     
 # --------------------------------
 #     BUSINESS CREATION HELPER

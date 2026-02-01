@@ -48,7 +48,7 @@ def business_name_exists(business_name):
 def get_user_balance(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing requirements or id not existing")
+            raise APIError(message="Username not found", status_code=404)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -60,13 +60,13 @@ def get_user_balance(username):
 
         return results["balance"]
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor: cursor.close()
+        if cursor: conn.close()
 
 
 
@@ -88,21 +88,25 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
             "select balance from accounts where username = %s for update",
             (payer_username,)
         )
+
         payer = cursor.fetchone()
+
         if not payer:
-            raise Exception("Payer not found")
+            raise APIError(message="Payer not found", status_code=404)
 
         if payer["balance"] < amount:
-            raise Exception("Insufficient funds")
+            raise APIError(message="Insufficient funds", status_code=403)
 
         # Lock issuer
         cursor.execute(
             "select balance from accounts where username = %s for update",
             (issuer_username,)
         )
+
         issuer = cursor.fetchone()
+
         if not issuer:
-            raise Exception("Issuer not found")
+            raise APIError(message="Issuer not found", status_code=404)
 
         # Update balances
         cursor.execute(
@@ -123,12 +127,12 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         conn.commit()
         return True
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
 
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -149,21 +153,23 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
             "select balance from accounts where username = %s for update",
             (payer_username,)
         )
+
         payer = cursor.fetchone()
         if not payer:
-            raise Exception("Payer not found")
+            raise APIError(message="Payer not found", status_code=404)
 
         if payer["balance"] < amount:
-            raise Exception("Insufficient funds")
+            raise APIError(message="Insufficient funds", status_code=403)
 
         # Lock issuer
         cursor.execute(
             "select balance from business_accounts where business_name = %s for update",
             (issuer_business_name,)
         )
+
         issuer = cursor.fetchone()
         if not issuer:
-            raise Exception("Issuer not found")
+            raise APIError(message="Issuer not found", status_code=404)
 
         # Update balances
         cursor.execute(
@@ -184,12 +190,12 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
         conn.commit()
         return True
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
 
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -198,8 +204,11 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
 # ---------------------------------------
 def get_todays_transactions(username, start_of_day, now):
     try:
-        if not (username and start_of_day and now and username_exists(username)):
-            raise Exception("Missing requirements or id not existing")
+        if not (username and username_exists(username)):
+            raise APIError(message="User not found", status_code=404)
+        
+        if not(now and start_of_day):
+            raise APIError(message="Dates are missing", status_code=400)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -216,12 +225,12 @@ def get_todays_transactions(username, start_of_day, now):
 
         return results
     
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
         
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 # --------------------------------------
@@ -230,7 +239,7 @@ def get_todays_transactions(username, start_of_day, now):
 def transactions_amount(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing requirements or id not existing")
+            raise APIError(message="User not found", status_code=404)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -245,12 +254,12 @@ def transactions_amount(username):
 
         return results
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
         
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -261,7 +270,7 @@ def transactions_amount(username):
 def get_user_id_by_username(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing requirements or username not existing")
+            raise APIError(message="User not found", status_code=404)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -275,12 +284,12 @@ def get_user_id_by_username(username):
 
         return results["id"]
     
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
     
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -290,7 +299,7 @@ def get_user_id_by_username(username):
 def get_business_id_by_username(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing Credentials")
+            raise APIError(message="User not found", status_code=404)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -303,12 +312,12 @@ def get_business_id_by_username(username):
 
         return business_id["id"]
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
     
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 # ---------------------------------
@@ -317,7 +326,7 @@ def get_business_id_by_username(username):
 def get_business_balance(username):
     try:
         if not (username and username_exists(username)):
-            raise Exception("Missing requirements or id not existing")
+            raise APIError(message="User not found", status_code=404)
         
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
@@ -329,13 +338,13 @@ def get_business_balance(username):
         row = cursor.fetchone()
 
         if not row:
-            return {"balance": 0.0}
+            raise APIError(message="Balance missing. Alert devs", status_code=500)
 
         return {
             "balance": float(row["balance"])
         }
 
-    except Exception:
+    except APIError:
         conn.rollback()
         raise
 

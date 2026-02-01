@@ -1,7 +1,8 @@
 class APIError(Exception):
-    def __init__(self, message, error_code):
+    def __init__(self, message, status_code):
         super.__init__(message)
-        self.error_code = error_code
+        self.message = message
+        self.status_code = status_code
     
-    def __str__(self):
-        return f"{self.message} (Error Code: {self.error_code})"
+    def to_dict(self):
+        return {"Error":self.message}
