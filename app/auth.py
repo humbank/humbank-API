@@ -8,8 +8,7 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
-from error import APIError
-
+from .error import APIError
 
 
 bcrypt = Bcrypt()

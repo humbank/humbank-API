@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
 import os
-from error import APIError
+from .error import APIError
 
 api = Blueprint("api", __name__)
 

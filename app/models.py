@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from .auth import hash_pin
 from . import db
-from error import APIError
+from .error import APIError
 
 class Account(db.Model):
 

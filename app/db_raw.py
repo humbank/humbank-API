@@ -1,7 +1,6 @@
 import mysql.connector
 from flask import current_app
-from error import APIError
-
+from .error import APIError
 
 # Create a fresh MySQL connection using credentials from config
 def getBank():
