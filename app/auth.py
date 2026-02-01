@@ -8,6 +8,7 @@ from flask_jwt_extended import (
 )
 from functools import wraps
 import re
+from error import APIError
 
 
 
@@ -67,16 +68,16 @@ def require_auth(func):
             user = Account.query.filter_by(username=username).first()
 
             if not user:
-                return jsonify("User not found"), 401
+                raise APIError(message="User not found", error_code=404)
             
             if user.deleted_at is not None:
-                return jsonify("Account disabled"), 401
+                raise APIError(message="User disabled", error_code=401)
 
             # Pass it into the route as a keyword arg
             return func(current_username=username, *args, **kwargs)
 
-        except Exception as e:
-            return jsonify(str(e)), 401
+        except APIError as e:
+            return jsonify({e.message}), e.error_code
 
     return wrapper
 
