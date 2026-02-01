@@ -325,14 +325,20 @@ def get_business_balance(username):
         sql = "select balance from business_accounts where owner_username = %s;"
 
         cursor.execute(sql, (username,))
-        results = cursor.fetchone()
 
-        return results
+        row = cursor.fetchone()
+
+        if not row:
+            return {"balance": 0.0}
+
+        return {
+            "balance": float(row["balance"])
+        }
 
     except Exception:
         conn.rollback()
         raise
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor: cursor.close()
+        if cursor: conn.close()
