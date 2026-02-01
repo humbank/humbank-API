@@ -35,7 +35,6 @@ def isoformat_german(dt):
 # -------------------------
 @api.route("/login", methods=["POST"])
 def login():
-    print("test")
     try:
         data = request.get_json()
 
