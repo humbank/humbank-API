@@ -217,32 +217,38 @@ def create_business_route(current_username):
     from . import db
     try:
         data = request.get_json() or {}
-
         business_name = data.get("business_name")
         pin = data.get("pin")
         owner_username = data.get("owner_username")
         description = data.get("description") or "We will greet you in person!"
 
-        if not business_name or not pin or not owner_username:
-            return jsonify("Missing fields"), 400
+        if not business_name:
+            raise APIError(message="Business Name is missing", status_code=400)
+        
+        if not description:
+            raise APIError(message="Describtion is missing", status_code=400)
+        
+        if not pin:
+            raise APIError(message="Pin is missing", status_code=400)
+        
+        if not owner_username:
+            raise APIError(message="Owner Username is missing", status_code=400)
         
         pin = str(pin)
         business_name = normalize_business_name(business_name=business_name)
         
         if not validate_business_name(business_name=business_name):
-            return jsonify("Business name must be 3-25 characters, "
-            "underscores or numbers only"), 400
+            raise APIError(message="Business name must be 3-25 characters, "
+            "underscores or numbers only", status_code=400)
         
         if not business_name_exists(business_name):
-            return jsonify("Business name already taken"), 400
-
-
+            raise APIError(message="Business Name already taken", status_code=403)
 
         if not username_exists(owner_username):
-            return jsonify("User not found"), 404
+            raise APIError(message="User not found", status_code=404)
         
         if not can_create_business(owner_username, limit=1):
-            return jsonify("Owner already has maximum businesses"), 403
+            raise APIError(message="Owner reached business limit", status_code=403)
         
         owner_id = get_user_id_by_username(owner_username)
         
@@ -283,7 +289,7 @@ def create_business_route(current_username):
                 return jsonify(str(e)), 520
             
         if is_deleted:
-            raise Exception("Business is disabled")
+            raise APIError(message="Business is disabled", status_code=401)
 
 
         # Add new business
@@ -307,7 +313,7 @@ def create_business_route(current_username):
     
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify("Business name already exists"), 400
+        return jsonify({"Error":"Business name already exists"}), 400
     
 
     except APIError as e:
@@ -336,8 +342,15 @@ def disable_business_route(current_username):
 
         
         business = BusinessAccount.query.get(business_id)
-        if not business or business.deleted_at is not None:
-            return jsonify("Business not found"), 404
+        
+        if not business:
+            raise APIError(message="Business not found", status_code=404)
+        
+        if not business_id:
+            raise APIError(message="Business Id missing", status_code=400)
+        
+        if business.deleted_at is not None:
+            raise APIError(message="Business already disabled", status_code=422)
 
         business.deleted_at = db.func.now()
         db.session.commit()
@@ -360,9 +373,9 @@ def disable_business_route(current_username):
 
         return jsonify("Business disabled"), 200
 
-    except Exception as e:
+    except APIError as e:
         db.session.rollback()
-        return jsonify(str(e)), 520
+        return jsonify(e.to_dict()), e.status_code
 
 
 # ---------------------
@@ -377,12 +390,15 @@ def disable_user_route(current_username):
     try:
         data = request.get_json() or {}
 
-        user_id = data.get("user_id")
+        username = data.get("username")
 
-        user = Account.query.get(user_id)
+        if not username:
+            raise APIError(message="Username missing", status_code=400)
+
+        user = Account.query.filter(username=username)
 
         if not user:
-            return jsonify("User not found"), 404
+            raise APIError(message="User not found", status_code=404)
     
         from . import db
 
@@ -391,8 +407,8 @@ def disable_user_route(current_username):
 
         return jsonify("User is disabled"), 200
     
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 
@@ -410,19 +426,31 @@ def execute_transfer_route(current_username):
         amount = data.get("amount")
         transaction_id = data.get("transaction_id")
         description = data.get("description")
+        
+        if not issuer_username:
+            raise APIError(message="Issuer username missing", status_code=400)
+        
+        if not amount:
+            raise APIError(message="Amount is missing", status_code=400)
+        
+        if not transaction_id:
+            raise APIError(message="Transaction Id missing", status_code=400)
+        
+        if not description:
+            raise APIError(message="Description missing", status_code=400)
 
-        if not issuer_username or not amount or not transaction_id or not description:
-            return jsonify("Missing fields"), 400
+        if not username_exists(issuer_username):
+            raise APIError(message="User not found", status_code=404)
 
         result = execute_transfer(payer_username, issuer_username, amount, transaction_id, description)
 
         if result is True:
             return jsonify("Transfer completed"), 200
         else:
-            return "", 400
+            raise APIError(message="Transfer went wrong", status_code=500)
 
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
     
 
 # ----------------------------------
