@@ -467,19 +467,31 @@ def execute_transfer_to_business_route(current_username):
         amount = data.get("amount")
         transaction_id = data.get("transaction_id")
         description = data.get("description")
+        
+        if not issuer_business_name:
+            raise APIError(message="Business Name missing", status_code=400)
+        
+        if not amount:
+            raise APIError(message="Amount is missing", status_code=400)
+        
+        if not transaction_id:
+            raise APIError(message="Transaction Id missing", status_code=400)
+        
+        if not description:
+            raise APIError(message="Description missing", status_code=400)
 
-        if not issuer_business_name or not amount or not transaction_id or not description:
-            return jsonify("Missing fields"), 400
+        if not business_name_exists(issuer_business_name):
+            raise APIError(message="Business not found", status_code=404)
 
         result = execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description)
 
         if result is True:
             return jsonify("Transfer completed"), 200
         else:
-            return "", 400
+            raise APIError(message="Transfer went wrong", status_code=500)
 
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 # -------------------------
@@ -495,8 +507,8 @@ def todays_transactions_route(current_username):
         results = get_todays_transactions(current_username, start, now)
         return jsonify(results), 200
 
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 # ----------------------------
 #  TODAY'S TRANSACTION AMOUNT
@@ -508,8 +520,8 @@ def transactions_amount_route(current_username):
         results = transactions_amount(current_username)
         return jsonify(results), 200
     
-    except Exception as e:
-        return jsonify(str(e)), 520
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 
