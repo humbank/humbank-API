@@ -506,7 +506,8 @@ def todays_transactions_route(current_username):
 
         results = get_todays_transactions(current_username, start, now)
 
-        results["transaction_date"] = isoformat_german(results["transaction_date"])
+        for entry in results:
+            results[results.index(entry)]["transaction_date"] = isoformat_german(results[results.index(entry)]["transaction_date"])
 
         return jsonify(results), 200
 
