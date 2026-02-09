@@ -5,7 +5,8 @@ from .models import Account, BusinessAccount, BusinessMember
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
-                     username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business)
+                     username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
+                     pay_fee)
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
@@ -13,6 +14,8 @@ import os
 from .error import APIError
 
 api = Blueprint("api", __name__)
+
+BANK_FEE = 0.05
 
 
 # -------------------------
@@ -423,14 +426,14 @@ def execute_transfer_route(current_username):
 
         payer_username = current_username
         issuer_username = data.get("issuer_username")
-        amount = data.get("amount")
+        absolute_amount = data.get("amount")
         transaction_id = data.get("transaction_id")
         description = data.get("description")
         
         if not issuer_username:
             raise APIError(message="Issuer username missing", status_code=400)
         
-        if not amount:
+        if not absolute_amount:
             raise APIError(message="Amount is missing", status_code=400)
         
         if not transaction_id:
@@ -441,8 +444,15 @@ def execute_transfer_route(current_username):
 
         if not username_exists(issuer_username):
             raise APIError(message="User not found", status_code=404)
+        
+        real_amount = absolute_amount * (1-BANK_FEE)
 
-        result = execute_transfer(payer_username, issuer_username, amount, transaction_id, description)
+        fee_result = pay_fee(absolute_amount*BANK_FEE)
+        
+        if fee_result is not True:
+            raise APIError(message="Transfer went wrong, apparent server error", status_code=500)
+
+        result = execute_transfer(payer_username, issuer_username, real_amount, transaction_id, description)
 
         if result is True:
             return jsonify("Transfer completed"), 200
