@@ -88,7 +88,7 @@ def pay_fee(payer_username, amount):
 
         # Insert transaction
         # cursor.execute(
-        #     "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
+        #     "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
         #     (transaction_id, payer_username, issuer_business_name, amount, description)
         # )
 
@@ -182,7 +182,7 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
 
         # Insert transaction
         cursor.execute(
-            "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
             (transaction_id, payer_username, issuer_username, amount, description)
         )
 
@@ -245,7 +245,7 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
 
         # Insert transaction
         cursor.execute(
-            "insert into transactions (transaction_id, payer_username, issuer_username, amount, describtion) values (%s, %s, %s, %s, %s)",
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
             (transaction_id, payer_username, issuer_business_name, amount, description)
         )
 
