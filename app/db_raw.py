@@ -47,6 +47,7 @@ def business_name_exists(business_name):
 #       APPLY THE FEE
 # ---------------------------------
 def pay_fee(payer_username, amount):
+
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
 
@@ -97,7 +98,7 @@ def pay_fee(payer_username, amount):
         raise
 
     finally:
-        if cursor: cursor.close()
+        cursor.close()
         conn.close()
 
 

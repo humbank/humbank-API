@@ -448,8 +448,6 @@ def execute_transfer_route(current_username):
         real_amount = absolute_amount * (1-BANK_FEE)
 
         fee_result = pay_fee(payer_username, absolute_amount*BANK_FEE)
-
-        print(fee_result)
         
         if fee_result is not True:
             raise APIError(message="Transfer went wrong, apparent server error", status_code=500)
