@@ -277,7 +277,7 @@ def get_todays_transactions(username, start_of_day, now):
 
         sql = """
             SELECT * from transactions
-            WHERE (payer_id = %s OR issuer_id = %s)
+            WHERE (payer_username = %s OR issuer_username = %s)
             AND transaction_date between %s AND %s
             ORDER BY transaction_date DESC
         """
