@@ -447,6 +447,8 @@ def execute_transfer_route(current_username):
         
         real_amount = absolute_amount * (1-BANK_FEE)
 
+        print("Problem lies here")
+
         fee_result = pay_fee(payer_username, absolute_amount*BANK_FEE)
         
         if fee_result is not True:
