@@ -74,7 +74,7 @@ def pay_fee(payer_username, amount):
             ("Bank",)
         )
 
-        issuer = cursor.fetchone()
+        bank = cursor.fetchone()
 
         # Update balances
         cursor.execute(
@@ -100,7 +100,7 @@ def pay_fee(payer_username, amount):
         raise
 
     finally:
-        cursor.close()
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -164,6 +164,8 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         )
 
         issuer = cursor.fetchone()
+        if not issuer:
+            raise APIError(message="Bank not found, Important", status_code=404)
 
         if not issuer:
             raise APIError(message="Issuer not found", status_code=404)
