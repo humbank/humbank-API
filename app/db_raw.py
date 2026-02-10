@@ -74,6 +74,8 @@ def pay_fee(payer_username, amount):
             ("Bank",)
         )
 
+        issuer = cursor.fetchone()
+
         # Update balances
         cursor.execute(
             "update accounts set balance = balance - %s where username = %s",
