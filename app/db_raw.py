@@ -46,7 +46,7 @@ def business_name_exists(business_name):
 # ---------------------------------
 #       APPLY THE FEE
 # ---------------------------------
-def pay_fee(payer_username, amount):
+def pay_fee(fee_payer_name, amount):
 
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
@@ -58,14 +58,14 @@ def pay_fee(payer_username, amount):
         # Lock payer
         cursor.execute(
             "select balance from accounts where username = %s for update",
-            (payer_username,)
+            (fee_payer_name,)
         )
 
-        payer = cursor.fetchone()
-        if not payer:
+        fee_payer = cursor.fetchone()
+        if not fee_payer:
             raise APIError(message="Payer not found", status_code=404)
 
-        if payer["balance"] < amount:
+        if fee_payer["balance"] < amount:
             raise APIError(message="Insufficient funds", status_code=403)
 
         # Lock issuer
@@ -79,7 +79,7 @@ def pay_fee(payer_username, amount):
         # Update balances
         cursor.execute(
             "update accounts set balance = balance - %s where username = %s",
-            (amount, payer_username)
+            (amount, fee_payer_name)
         )
         cursor.execute(
             "update business_accounts set balance = balance + %s where business_name = %s",
