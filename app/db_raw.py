@@ -43,67 +43,6 @@ def business_name_exists(business_name):
     
     return result is None
 
-# ---------------------------------
-#       APPLY THE FEE
-# ---------------------------------
-def pay_fee(fee_payer_name, amount):
-
-    conn = getBank()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
-        # Start transaction
-        conn.start_transaction()
-
-        # Lock payer
-        cursor.execute(
-            "select balance from accounts where username = %s for update",
-            (fee_payer_name,)
-        )
-
-        fee_payer = cursor.fetchone()
-        if not fee_payer:
-            raise APIError(message="Payer not found", status_code=404)
-
-        if fee_payer["balance"] < amount:
-            raise APIError(message="Insufficient funds", status_code=403)
-
-        # Lock issuer
-        cursor.execute(
-            "select balance from business_accounts where business_name = %s for update",
-            ("Bank",)
-        )
-
-        bank = cursor.fetchone()
-
-        # Update balances
-        cursor.execute(
-            "update accounts set balance = balance - %s where username = %s",
-            (amount, fee_payer_name)
-        )
-        cursor.execute(
-            "update business_accounts set balance = balance + %s where business_name = %s",
-            (amount, "Bank")
-        )
-
-        # Insert transaction
-        # cursor.execute(
-        #     "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
-        #     (transaction_id, payer_username, issuer_business_name, amount, description)
-        # )
-
-        conn.commit()
-        return True
-
-    except APIError:
-        conn.rollback()
-        raise
-
-    finally:
-        if cursor: cursor.close()
-        conn.close()
-
-
 
 def get_user_balance(username):
     try:
@@ -131,15 +70,17 @@ def get_user_balance(username):
 
 
 
-# ---------------------------------
-#       EXECUTE TRANSFER
-# ---------------------------------
-def execute_transfer(payer_username, issuer_username, amount, transaction_id, description):
+# ----------------------------------------
+#       EXECUTE TRANSFER WITH FEE AND TAX
+# ----------------------------------------
+def execute_transfer(payer_username, issuer_username, amount, transaction_id, description, fee, taxes):
 
     conn = getBank()
     cursor = conn.cursor(dictionary=True)
 
     try:
+        netto_amount = amount - (amount * fee) - (amount * taxes)
+
         # Start transaction
         conn.start_transaction()
 
@@ -164,11 +105,19 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         )
 
         issuer = cursor.fetchone()
-        if not issuer:
-            raise APIError(message="Bank not found, Important", status_code=404)
 
         if not issuer:
             raise APIError(message="Issuer not found", status_code=404)
+        
+        cursor.execute(
+            "select balance from business_accounts where business_name = %s for update",
+            ("Bank",)
+        )
+
+        bank = cursor.fetchone()
+
+        if not issuer:
+            raise APIError(message="Bank not found, Important", status_code=404)
 
         # Update balances
         cursor.execute(
@@ -177,13 +126,17 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         )
         cursor.execute(
             "update accounts set balance = balance + %s where username = %s",
-            (amount, issuer_username)
+            (netto_amount, issuer_username)
+        )
+        cursor.execute(
+            "update business_accounts set balance = balance + %s where business_name = %s",
+            (amount * fee, "Bank")
         )
 
         # Insert transaction
         cursor.execute(
-            "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
-            (transaction_id, payer_username, issuer_username, amount, description)
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, netto_amount, description, bank_fee, trans_tax) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (transaction_id, payer_username, issuer_username, amount, netto_amount, description, fee, taxes)
         )
 
         conn.commit()

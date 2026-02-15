@@ -6,7 +6,7 @@ from .auth import (check_pin, generate_token, require_auth, normalize_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
-                     pay_fee)
+                    )
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
@@ -16,6 +16,8 @@ from .error import APIError
 api = Blueprint("api", __name__)
 
 BANK_FEE = 0.05
+
+TAXES = {"Status1": 0.02, "Status2": 0.03, "Status3": 0.05}
 
 
 # -------------------------
@@ -445,12 +447,12 @@ def execute_transfer_route(current_username):
         if not username_exists(issuer_username):
             raise APIError(message="User not found", status_code=404)
         
-        result = execute_transfer(payer_username, issuer_username, absolute_amount, transaction_id, description)
+        result = execute_transfer(payer_username, issuer_username, absolute_amount, transaction_id, description, BANK_FEE, TAXES["Status3"])
         
-        fee_result = pay_fee(issuer_username, absolute_amount*BANK_FEE)
+        #fee_result = pay_fee(issuer_username, absolute_amount*BANK_FEE)
         
-        if fee_result is not True:
-            raise APIError(message="Transfer went wrong, apparent server error", status_code=500)
+        #if fee_result is not True:
+        #    raise APIError(message="Transfer went wrong, apparent server error", status_code=500)
 
         
         if result is True:
