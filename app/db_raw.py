@@ -134,6 +134,7 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         )
 
         # Insert transaction
+        print(taxes)
         cursor.execute(
             "insert into transactions (transaction_id, payer_username, issuer_username, amount, netto_amount, description, bank_fee, trans_tax) values (%s, %s, %s, %s, %s, %s, %s, %s)",
             (transaction_id, payer_username, issuer_username, amount, netto_amount, description, fee, taxes)
