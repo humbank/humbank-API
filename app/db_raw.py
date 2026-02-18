@@ -277,6 +277,39 @@ def transactions_amount(username):
         if cursor: cursor.close()
         conn.close()
 
+# ---------------------------------------
+#       GET UPDATED ACCOUNTS AFTER TIME
+# ---------------------------------------
+def get_updated_accounts_after_time(username, time):
+    try:
+        if not (username and username_exists(username)):
+            raise APIError(message="User not found", status_code=404)
+        
+        if not(time):
+            raise APIError(message="Date is missing", status_code=400)
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT * from accounts
+            WHERE username = %s
+            AND updated_at >= %s;
+        """
+
+        cursor.execute(sql, (username, time))
+        results = cursor.fetchall()
+
+        return results
+    
+    except APIError:
+        conn.rollback()
+        raise
+        
+    finally:
+        if cursor: cursor.close()
+        conn.close()
+
 
 
 # ------------------------------------------------

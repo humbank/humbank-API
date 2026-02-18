@@ -6,6 +6,7 @@ from .auth import (check_pin, generate_token, require_auth, normalize_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
+                     get_updated_accounts_after_time
                     )
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -20,9 +21,9 @@ BANK_FEE = 0.05
 TAXES = {"Status1": 0.02, "Status2": 0.03, "Status3": 0.05}
 
 
-# -------------------------
-#        TIMEZONE HELPER    
-# -------------------------
+# -----------------------------
+#       GERMAN TIMEZONE HELPER     
+# -----------------------------
 GERMAN_TZ = ZoneInfo("Europe/Berlin")
 
 def isoformat_german(dt):
@@ -33,6 +34,20 @@ def isoformat_german(dt):
         dt = dt.replace(tzinfo=timezone.utc)
 
     return dt.astimezone(GERMAN_TZ).isoformat()
+
+# ------------------------------
+#       BRITISH TIMEZONE HELPER     
+# ------------------------------
+BRITISH_TZ = ZoneInfo("Europe/London")
+
+def isoformat_britain(dt):
+    if dt is None:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.astimezone(BRITISH_TZ).isoformat()
 
 
 # -------------------------
@@ -537,6 +552,26 @@ def transactions_amount_route(current_username):
     
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
+
+# ----------------------------------
+#  GET UPDATED ACCOUNTS AFTER TIME
+# ----------------------------------
+@api.route("/get_updated_accounts_after_time", methods=["POST"])
+@require_auth
+def get_updated_accounts_after_time_route(current_username, time):
+    try:
+        time = isoformat_britain(time)
+        results = get_updated_accounts_after_time(current_username, time)
+
+        for entry in results:
+            results[results.index(entry)]["updated_at"] = isoformat_german(results[results.index(entry)]["updated_at"])
+
+        return jsonify(results), 200
+
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+
+
 
 
 
