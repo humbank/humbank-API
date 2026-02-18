@@ -545,6 +545,6 @@ def transactions_amount_route(current_username):
 # ----------------------------
 @api.route("/check_token_validity", methods=["GET"])
 @require_auth
-def check_token_validity_route(current_user_id):
+def check_token_validity_route(current_username):
 	return "", 200
 
