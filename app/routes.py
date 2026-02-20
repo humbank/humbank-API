@@ -659,7 +659,15 @@ def get_updated_accounts_after_time_route(current_username):
         for entry in results:
             results[results.index(entry)]["updated_at"] = isoformat_german(results[results.index(entry)]["updated_at"])
 
-        return jsonify(results), 200
+        return jsonify([
+            {
+                "username": u.username,
+                "role": u.role,
+                "updated_at": isoformat_german(u.updated_at),
+                "full_name": u.full_name(),
+            }
+            for u in results
+        ]), 200
 
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
