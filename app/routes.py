@@ -467,7 +467,7 @@ def ban_users_route(current_username):
         
         for username in usernames:
             if not username_exists(username):
-                raise APIError(message=f"Username {username} not found", status_code=404)
+                raise APIError(message="Username not found", status_code=404)
         
         users = []
 
