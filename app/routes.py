@@ -638,8 +638,9 @@ def transactions_amount_route(current_username):
 @require_auth
 def get_updated_accounts_after_time_route(current_username, time):
     try:
-        time = isoformat_britain(time)
-        results = get_updated_accounts_after_time(current_username, time)
+        time = data.get("time")
+        formatted_time = isoformat_britain(time)
+        results = get_updated_accounts_after_time(current_username, formatted_time)
 
         for entry in results:
             results[results.index(entry)]["updated_at"] = isoformat_german(results[results.index(entry)]["updated_at"])
