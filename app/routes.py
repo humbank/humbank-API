@@ -636,11 +636,11 @@ def transactions_amount_route(current_username):
 # ----------------------------------
 @api.route("/get_updated_accounts_after_time", methods=["POST"])
 @require_auth
-def get_updated_accounts_after_time_route(current_username, time):
+def get_updated_accounts_after_time_route(current_username):
     try:
         data = request.get_json() or {}
-        time = data.get("time")
-        formatted_time = isoformat_britain(time)
+        aa = data.get("time")
+        formatted_time = isoformat_britain(aa)
         results = get_updated_accounts_after_time(current_username, formatted_time)
 
         for entry in results:
