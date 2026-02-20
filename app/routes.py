@@ -93,6 +93,12 @@ def login():
         
         if not user.pin_hash:
             raise APIError(message="User has no Pin set", status_code=400)
+        
+        if user.deleted_at is not None:
+            raise APIError(message="User is deleted", status_code=401)
+        
+        if user.banned_at is not None:
+            raise APIError(message="User is banned", status_code=401)
 
 
         # Verify PIN hash
@@ -429,7 +435,7 @@ def disable_user_route(current_username):
         if not username:
             raise APIError(message="Username missing", status_code=400)
 
-        user = Account.query.filter(username=username)
+        user = Account.query.filter_by(username=username)
 
         if not user:
             raise APIError(message="User not found", status_code=404)
@@ -466,7 +472,7 @@ def ban_users_route(current_username):
         users = []
 
         for username in usernames:
-            user = Account.query.filter(username=username)
+            user = Account.query.filter_by(username=username)
 
             if not user:
                 raise APIError(message="User not found", status_code=404)
