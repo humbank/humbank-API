@@ -639,8 +639,21 @@ def transactions_amount_route(current_username):
 def get_updated_accounts_after_time_route(current_username):
     try:
         data = request.get_json() or {}
-        aa = data.get("time")
+        time = data.get("time")
+
+        if not time:
+            raise APIError(message="Time parameter missing", status_code=400)
+
+
+        try:
+            if isinstance(time, str):
+                time = datetime.fromisoformat(time)
+        except ValueError:
+            raise APIError(message="Invalid time format. Use ISO format.", status_code=400)
+
         formatted_time = isoformat_britain(aa)
+
+
         results = get_updated_accounts_after_time(current_username, formatted_time)
 
         for entry in results:
