@@ -651,7 +651,7 @@ def get_updated_accounts_after_time_route(current_username):
         except ValueError:
             raise APIError(message="Invalid time format. Use ISO format.", status_code=400)
 
-        formatted_time = isoformat_britain(aa)
+        formatted_time = isoformat_britain(time)
 
 
         results = get_updated_accounts_after_time(current_username, formatted_time)
