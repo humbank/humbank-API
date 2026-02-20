@@ -64,8 +64,8 @@ def get_user_balance(username):
         raise
 
     finally:
-         
-        if conn.cursor: conn.close()
+        if cursor: cursor.close()
+        if cursor: conn.close()
 
 
 
@@ -147,7 +147,7 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         raise
 
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -210,7 +210,7 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
         raise
 
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -245,7 +245,7 @@ def get_todays_transactions(username, start_of_day, now):
         raise
         
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 # --------------------------------------
@@ -274,7 +274,7 @@ def transactions_amount(username):
         raise
         
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 # ---------------------------------------
@@ -308,6 +308,7 @@ def todays_transaction_amount(username, start_of_day, now):
         raise
         
     finally:
+        if cursor: cursor.close()
         conn.close()
 
 # ---------------------------------------
@@ -344,7 +345,7 @@ def get_updated_accounts_after_time(username, time):
         raise
         
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -374,7 +375,7 @@ def get_user_id_by_username(username):
         raise
     
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 
@@ -402,7 +403,7 @@ def get_business_id_by_username(username):
         raise
     
     finally:
-         
+        if cursor: cursor.close()
         conn.close()
 
 # ---------------------------------
@@ -434,5 +435,5 @@ def get_business_balance(username):
         raise
 
     finally:
-         
-        if conn.cursor: conn.close()
+        if cursor: cursor.close()
+        if cursor: conn.close()
