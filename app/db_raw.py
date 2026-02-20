@@ -215,7 +215,7 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
 
 
 # ---------------------------------------
-#       GET TRANSACTIONS FROM DATE
+#       GET TODAYS TRANSACTIONS 
 # ---------------------------------------
 def get_todays_transactions(username, start_of_day, now):
     try:
@@ -269,6 +269,40 @@ def transactions_amount(username):
 
         return results
 
+    except APIError:
+        conn.rollback()
+        raise
+        
+    finally:
+        if cursor: cursor.close()
+        conn.close()
+
+# ---------------------------------------
+#       GET TODAYS TRANSACTION AMOUNT
+# ---------------------------------------
+def todays_transaction_amount(username, start_of_day, now):
+    try:
+        if not (username and username_exists(username)):
+            raise APIError(message="User not found", status_code=404)
+        
+        if not(now and start_of_day):
+            raise APIError(message="Dates are missing", status_code=400)
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT COUNT(transaction_id) from transactions
+            WHERE (payer_username = %s OR issuer_username = %s)
+            AND transaction_date between %s AND %s
+            ORDER BY transaction_date DESC
+        """
+
+        cursor.execute(sql, (username, username, start_of_day, now))
+        result = cursor.fetchone()
+
+        return result
+    
     except APIError:
         conn.rollback()
         raise

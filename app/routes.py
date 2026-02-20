@@ -6,7 +6,7 @@ from .auth import (check_pin, generate_token, require_auth, normalize_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
-                     get_updated_accounts_after_time
+                     get_updated_accounts_after_time, todays_transaction_amount
                     )
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -640,7 +640,7 @@ def todays_transactions_route(current_username):
         return jsonify(e.to_dict()), e.status_code
 
 # ----------------------------
-#  TODAY'S TRANSACTION AMOUNT
+#      TRANSACTION AMOUNT
 # ----------------------------
 @api.route("/transactions_amount", methods=["GET"])
 @require_auth
@@ -649,6 +649,23 @@ def transactions_amount_route(current_username):
         results = transactions_amount(current_username)
         return jsonify(results), 200
     
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+    
+# --------------------------------
+#      TODAY`S TRANSACTION AMOUNT
+# --------------------------------
+@api.route("/todays_transactions_amount", methods=["GET"])
+@require_auth
+def todays_transaction_amount_route(current_username):
+    try:
+        now = datetime.now()
+        start = datetime.combine(now.date(), datetime.min.time())
+
+        result = todays_transaction_amount(current_username, start, now)
+
+        return jsonify(result), 200
+
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
 
