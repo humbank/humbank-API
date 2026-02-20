@@ -441,7 +441,7 @@ def ban_users_route(current_username):
 
         usernames = data.get("users")
 
-        if not usernames or usernames.len() == 0:
+        if not usernames or len(usernames) == 0:
             raise APIError(message="Usernames missing", status_code=400)
         
         for username in usernames:
