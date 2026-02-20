@@ -401,7 +401,6 @@ def disable_business_route(current_username):
 # ---------------------
 #     DISABLE USER
 # ---------------------
-
 @api.route("/disable_user", methods=["POST"])
 @require_auth
 @require_role("admin")
@@ -426,6 +425,85 @@ def disable_user_route(current_username):
         db.session.commit()
 
         return jsonify("User is disabled"), 200
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+    
+# ---------------------
+#     BAN USERS
+# ---------------------
+@api.route("/ban_users", methods=["POST"])
+@require_auth
+@require_role("admin")
+def ban_users_route(current_username):
+    try:
+        data = request.get_json() or {}
+
+        usernames = data.get("users")
+
+        if not usernames or usernames.len() == 0:
+            raise APIError(message="Usernames missing", status_code=400)
+        
+        for username in usernames:
+            if not username_exists(username):
+                raise APIError(message=f"Username {username} not found", status_code=404)
+        
+        users = []
+
+        for username in usernames:
+            user = Account.query.filter(username=username)
+
+            if not user:
+                raise APIError(message="User not found", status_code=404)
+    
+        from . import db
+
+        for user in users:
+            if user.role == "admin":
+                raise APIError(message="Tried to ban admin", status_code=403)
+            
+            user.banned_at = db.func.now()
+            db.session.commit()
+
+        return jsonify("Users are banned"), 200
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+    
+# ---------------------
+#     DEBAN USERS
+# ---------------------
+@api.route("/ban_users", methods=["POST"])
+@require_auth
+@require_role("admin")
+def deban_users_route(current_username):
+    try:
+        data = request.get_json() or {}
+
+        usernames = data.get("users")
+
+        if not usernames or usernames.len() == 0:
+            raise APIError(message="Usernames missing", status_code=400)
+        
+        for username in usernames:
+            if not username_exists(username):
+                raise APIError(message=f"Username {username} not found", status_code=404)
+        
+        users = []
+
+        for username in usernames:
+            user = Account.query.filter(username=username)
+
+            if not user:
+                raise APIError(message="User not found", status_code=404)
+    
+        from . import db
+
+        for user in users:
+            user.banned_at = None
+            db.session.commit()
+
+        return jsonify("Users are debanned"), 200
     
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code

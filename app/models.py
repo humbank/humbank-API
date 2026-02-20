@@ -45,6 +45,11 @@ class Account(db.Model):
         onupdate=db.text("CURRENT_TIMESTAMP")
     )
 
+    banned_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
     username = db.Column(
         db.String(25), 
         nullable=False, 

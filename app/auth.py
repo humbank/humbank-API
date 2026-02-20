@@ -71,6 +71,9 @@ def require_auth(func):
             
             if user.deleted_at is not None:
                 raise APIError(message="User disabled", status_code=401)
+            
+            if user.banned_at is not None:
+                raise APIError(message="User is banned", status_code=403)
 
             # Pass it into the route as a keyword arg
             return func(current_username=username, *args, **kwargs)
