@@ -292,11 +292,15 @@ def get_updated_accounts_after_time(username, time):
         cursor = conn.cursor(dictionary=True)
 
         sql = """
-            SELECT * from accounts
-            WHERE username = %s
-            AND updated_at >= %s;
-        """
-
+                SELECT 
+                    username, 
+                    role, 
+                    updated_at, 
+                    CONCAT(first_name, ' ', last_name) AS full_name
+                FROM accounts
+                WHERE username = %s
+                AND updated_at >= %s;
+            """
         cursor.execute(sql, (username, time))
         results = cursor.fetchall()
 
