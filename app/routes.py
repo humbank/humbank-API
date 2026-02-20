@@ -29,11 +29,19 @@ GERMAN_TZ = ZoneInfo("Europe/Berlin")
 def isoformat_german(dt):
     if dt is None:
         return None
+    
+    
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt.replace(" ", "T"))
+        except ValueError:
+            return dt 
 
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
 
     return dt.astimezone(GERMAN_TZ).isoformat()
+
 
 # ------------------------------
 #       BRITISH TIMEZONE HELPER     
@@ -43,6 +51,13 @@ BRITISH_TZ = ZoneInfo("Europe/London")
 def isoformat_britain(dt):
     if dt is None:
         return None
+
+    
+    if isinstance(dt, str):
+        try:
+            dt = datetime.fromisoformat(dt.replace(" ", "T"))
+        except ValueError:
+            return dt
 
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
