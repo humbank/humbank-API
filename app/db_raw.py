@@ -292,7 +292,7 @@ def todays_transaction_amount(username, start_of_day, now):
         cursor = conn.cursor(dictionary=True)
 
         sql = """
-            SELECT COUNT(transaction_id) from transactions
+            SELECT COUNT(transaction_id) as todays_trans_amount from transactions
             WHERE (payer_username = %s OR issuer_username = %s)
             AND transaction_date between %s AND %s
             ORDER BY transaction_date DESC
