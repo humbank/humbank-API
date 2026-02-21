@@ -26,7 +26,7 @@ def id_exists(id):
 def username_exists(username):
     conn = getBank()
     cursor = conn.cursor()
-    cursor.execute("select username from accounts where username = %s #and deleted_at is not NULL and banned_at is not NULL;", (username,))
+    cursor.execute("select username from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -41,7 +41,7 @@ def business_name_exists(business_name):
     cursor.close()
     conn.close()
     
-    return result is None
+    return result is not None
 
 
 def get_user_balance(username):
@@ -116,7 +116,7 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
 
         bank = cursor.fetchone()
 
-        if not issuer:
+        if not bank:
             raise APIError(message="Bank not found, Important", status_code=404)
 
         # Update balances

@@ -393,7 +393,7 @@ def disable_business_route(current_username):
         if business.deleted_at is not None:
             raise APIError(message="Business already disabled", status_code=422)
 
-        business.deleted_at = db.func.now()
+        business.deleted_at = db.func.now(timezone.utc)
         db.session.commit()
 
         deleted_file = "business_deleted.json"
@@ -435,14 +435,14 @@ def disable_user_route(current_username):
         if not username:
             raise APIError(message="Username missing", status_code=400)
 
-        user = Account.query.filter_by(username=username)
+        user = Account.query.filter_by(username=username).first()
 
         if not user:
             raise APIError(message="User not found", status_code=404)
     
         from . import db
 
-        user.deleted_at = db.func.now()
+        user.deleted_at = db.func.now(timezone.utc)
         db.session.commit()
 
         return jsonify("User is disabled"), 200
@@ -472,10 +472,12 @@ def ban_users_route(current_username):
         users = []
 
         for username in usernames:
-            user = Account.query.filter_by(username=username)
+            user = Account.query.filter_by(username=username).first()
 
             if not user:
                 raise APIError(message="User not found", status_code=404)
+            
+            users.append(user)
     
         from . import db
 
@@ -483,7 +485,7 @@ def ban_users_route(current_username):
             if user.role == "admin":
                 raise APIError(message="Tried to ban admin", status_code=403)
             
-            user.banned_at = db.func.now()
+            user.banned_at = db.func.now(timezone.utc)
             db.session.commit()
 
         return jsonify("Users are banned"), 200
@@ -494,7 +496,7 @@ def ban_users_route(current_username):
 # ---------------------
 #     DEBAN USERS
 # ---------------------
-@api.route("/ban_users", methods=["POST"])
+@api.route("/deban_users", methods=["POST"])
 @require_auth
 @require_role("admin")
 def deban_users_route(current_username):
@@ -626,7 +628,7 @@ def execute_transfer_to_business_route(current_username):
 @require_auth
 def todays_transactions_route(current_username):
     try:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         start = datetime.combine(now.date(), datetime.min.time())
 
         results = get_todays_transactions(current_username, start, now)
@@ -659,7 +661,7 @@ def transactions_amount_route(current_username):
 @require_auth
 def todays_transaction_amount_route(current_username):
     try:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         start = datetime.combine(now.date(), datetime.min.time())
 
         result = todays_transaction_amount(current_username, start, now)
