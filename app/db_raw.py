@@ -330,6 +330,8 @@ def get_updated_accounts_after_time(username, time):
                     username, 
                     role, 
                     updated_at, 
+                    deleted_at,
+                    banned_at,
                     CONCAT(first_name, ' ', last_name) AS full_name
                 FROM accounts
                 WHERE username = %s
