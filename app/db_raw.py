@@ -436,4 +436,4 @@ def get_business_balance(username):
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
