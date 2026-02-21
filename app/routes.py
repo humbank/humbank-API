@@ -695,6 +695,9 @@ def get_updated_accounts_after_time_route(current_username):
                 "role": u["role"],
                 "updated_at": isoformat_german(u["updated_at"]),
                 "full_name": u["full_name"],
+                "deleted_at": u["deleted_at"],
+                "banned_at": u["banned_at"],
+                
             }
             for u in results
         ]), 200
