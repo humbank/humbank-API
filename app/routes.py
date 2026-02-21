@@ -282,7 +282,7 @@ def create_business_route(current_username):
             raise APIError(message="Business name must be 3-25 characters, "
             "underscores or numbers only", status_code=400)
         
-        if not business_name_exists(business_name):
+        if business_name_exists(business_name):
             raise APIError(message="Business Name already taken", status_code=403)
 
         if not username_exists(owner_username):
