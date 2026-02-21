@@ -26,7 +26,7 @@ def id_exists(id):
 def username_exists(username):
     conn = getBank()
     cursor = conn.cursor()
-    cursor.execute("select username from accounts where username = %s", (username, )) #and deleted_at is not NULL and banned_at is not NULL;", (username,))
+    cursor.execute("select username from accounts where username = %s #and deleted_at is not NULL and banned_at is not NULL;", (username,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
