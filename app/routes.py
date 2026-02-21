@@ -157,7 +157,7 @@ def get_user_account_route(current_username):
 @require_auth
 def get_all_users_route(current_username):
     try:
-        users = Account.query.filter(Account.deleted_at.is_(None)).all()
+        users = Account.query.all()
 
         if not users:
             raise APIError(message="Users not found", status_code=404)
@@ -168,6 +168,8 @@ def get_all_users_route(current_username):
                 "role": u.role,
                 "updated_at": isoformat_german(u.updated_at),
                 "full_name": u.full_name(),
+                "deleted_at": u.deleted_at,
+                "banned_at": u.banned_at,
             }
             for u in users
         ]), 200
