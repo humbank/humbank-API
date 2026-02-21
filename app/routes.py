@@ -689,6 +689,8 @@ def get_updated_accounts_after_time_route(current_username):
 
         results = get_updated_accounts_after_time(current_username, formatted_search_time)
 
+        print(results)
+
         return jsonify([
             {
                 "username": u["username"],
