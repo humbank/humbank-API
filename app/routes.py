@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify, send_from_directory
-from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from .models import Account, BusinessAccount, BusinessMember
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
@@ -8,7 +7,7 @@ from .db_raw import (get_business_balance, get_user_balance, execute_transfer, g
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
                      get_updated_accounts_after_time, todays_transaction_amount
                     )
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import json
 import os
@@ -106,16 +105,15 @@ def login():
             raise APIError(message="Pin is incorrect", status_code=401)
         
         additional_info = {
-                "role": user.role,
-                "deleted": user.deleted_at is not None,
-                "banned": user.banned_at is not None
-            }
+            "role": user.role,
+            "deleted": user.deleted_at is not None,
+            "banned": user.banned_at is not None
+        }
         
         # Create token
         token = generate_token(
             identity = user.username,
-            additional_claims = additional_info,
-            expires_delta = timedelta(minutes=30)
+            additional_claims = additional_info
         )
 
         return jsonify({"token": token, "username": username}), 200

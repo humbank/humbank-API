@@ -21,11 +21,12 @@ def hash_pin(pin):
 # -----------------------------
 # 1. Create a JWT when user logs in
 # -----------------------------
-def generate_token(username):
+def generate_token(idty, addi_claims):
     # Token contains the user ID
     token = create_access_token(
-        identity=str(username),
-        expires_delta=timedelta(hours=12)  # token valid for 12h
+        identity=str(idty),
+        additional_claims=addi_claims,
+        expires_delta=timedelta(minutes=30)  # token valid for 30 min
     )
     return token
 
