@@ -104,7 +104,7 @@ def login():
         if not check_pin(user.pin_hash, pin):
             raise APIError(message="Pin is incorrect", status_code=401)
         
-        additional_info = {
+        additional_claims = {
             "role": user.role,
             "deleted": user.deleted_at is not None,
             "banned": user.banned_at is not None
@@ -112,8 +112,8 @@ def login():
         
         # Create token
         token = generate_token(
-            identity = user.username,
-            additional_claims = additional_info
+            idty=user.username,
+            addi_claims= additional_claims
         )
 
         return jsonify({"token": token, "username": username}), 200
