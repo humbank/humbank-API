@@ -8,7 +8,7 @@ from .db_raw import (get_business_balance, get_user_balance, execute_transfer, g
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
                      get_updated_accounts_after_time, todays_transaction_amount
                     )
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 import json
 import os
@@ -105,8 +105,18 @@ def login():
         if not check_pin(user.pin_hash, pin):
             raise APIError(message="Pin is incorrect", status_code=401)
         
+        additional_info = {
+                "role": user.role,
+                "deleted": user.deleted_at is not None,
+                "banned": user.banned_at is not None
+            }
+        
         # Create token
-        token = generate_token(username)
+        token = generate_token(
+            identity = user.username,
+            additional_claims = additional_info,
+            expires_delta = timedelta(minutes=30)
+        )
 
         return jsonify({"token": token, "username": username}), 200
 
