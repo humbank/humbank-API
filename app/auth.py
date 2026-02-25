@@ -4,7 +4,8 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (
     create_access_token, 
     verify_jwt_in_request,
-    get_jwt_identity
+    get_jwt_identity,
+    get_jwt
 )
 from functools import wraps
 import re
@@ -48,11 +49,6 @@ def check_pin(stored_hash, provided_pin):
 # 3. Protect routes using @require_auth
 # -----------------------------
 def require_auth(func):
-    """
-    Decorator that:
-    - Verifies JWT is present
-    - Injects `current_username` into route
-    """
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -62,18 +58,13 @@ def require_auth(func):
 
             # Get user ID from the token
             username = get_jwt_identity()
+            claims = get_jwt()
 
-            from .models import Account
-
-            user = Account.query.filter_by(username=username).first()
-
-            if not user:
-                raise APIError(message="User not found", status_code=404)
             
-            if user.deleted_at is not None:
+            if claims["deleted"]:
                 raise APIError(message="User disabled", status_code=401)
             
-            if user.banned_at is not None:
+            if claims["banned"]:
                 raise APIError(message="User is banned", status_code=403)
 
             # Pass it into the route as a keyword arg
