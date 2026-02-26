@@ -1,5 +1,5 @@
 from .connection import getBank
-from error import APIError
+from app.error import APIError
 
 
 def id_exists(id):
