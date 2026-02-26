@@ -2,7 +2,7 @@ from flask import Flask
 from .config import Config
 from flask_jwt_extended import JWTManager
 from .auth import bcrypt
-from db.connection import init_connection_pool
+from .db.connection import init_connection_pool
 
 
 def create_app():
