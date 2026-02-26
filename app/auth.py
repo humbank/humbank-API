@@ -107,15 +107,13 @@ def require_role(*allowed_roles):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             try:
-                from .models import Account
-                
-                username = get_jwt_identity()
-                user = Account.query.filter_by(username=username).first()
+                verify_jwt_in_request()
 
-                if not user:
-                    raise APIError(message="User not found", status_code=404)
+                # Get user ID from the token
+                username = get_jwt_identity()
+                claims = get_jwt()
                 
-                if user.role not in allowed_roles:
+                if claims["role"] not in allowed_roles:
                     raise APIError(message="Entry forbidden", status_code=403)
 
                 return fn(*args, **kwargs)
