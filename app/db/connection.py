@@ -20,3 +20,4 @@ def init_connection_pool(app):
 # Create a fresh MySQL connection using credentials from config
 def getBank():
     return POOL.get_connection()
+

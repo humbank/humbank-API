@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
+from app.db.account import (get_user_account, get_user_balance)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_business_balance, get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
@@ -84,34 +85,34 @@ def login():
         pin = data["pin"]
 
         # Fetch user via SQLAlchemy model and username
-        user = Account.query.filter_by(username=username).first()
+        user = get_user_account()
         
-        if not user:
+        if not user or len(user) == 0:
             raise APIError(message="User not found", status_code=404)
         
-        if not user.pin_hash:
+        if not user["pin_hash"]:
             raise APIError(message="User has no Pin set", status_code=400)
         
-        if user.deleted_at is not None:
+        if user["deleted_at"] is not None:
             raise APIError(message="User is deleted", status_code=401)
         
-        if user.banned_at is not None:
+        if user["banned_at"] is not None:
             raise APIError(message="User is banned", status_code=401)
 
 
         # Verify PIN hash
-        if not check_pin(user.pin_hash, pin):
+        if not check_pin(user["pin_hash"], pin):
             raise APIError(message="Pin is incorrect", status_code=401)
         
         additional_claims = {
-            "role": user.role,
-            "deleted": user.deleted_at is not None,
-            "banned": user.banned_at is not None
+            "role": user["role"],
+            "deleted": user["deleted_at"] is not None,
+            "banned": user["banned_at"] is not None
         }
         
         # Create token
         token = generate_token(
-            idty=user.username,
+            idty=user["username"],
             addi_claims= additional_claims
         )
 
