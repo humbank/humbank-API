@@ -85,7 +85,7 @@ def login():
         pin = data["pin"]
 
         # Fetch user via SQLAlchemy model and username
-        user = get_user_account()
+        user = get_user_account(username)
         
         if not user or len(user) == 0:
             raise APIError(message="User not found", status_code=404)
