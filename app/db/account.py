@@ -72,9 +72,9 @@ def get_user_account(username):
         cursor.execute(sql, (username,))
 
         results = cursor.fetchall()
-        print(results)
+        print(results[0])
 
-        return results
+        return results[0]
 
     except APIError:
         conn.rollback()
