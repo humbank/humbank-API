@@ -239,7 +239,7 @@ def create_user_route(current_username):
         
         start_balance = 100
         
-        new_account = create_new_user_account(
+        id = create_new_user_account(
             first_name=first_name,
             last_name=last_name,
             balance=start_balance,
@@ -248,7 +248,7 @@ def create_user_route(current_username):
             pin=pin,
         )
 
-        return jsonify({"message": "User created", "id": new_account.id, "username": username}), 201
+        return jsonify({"message": "User created", "id": id, "username": username}), 201
 
 
     except APIError as e:

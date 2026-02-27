@@ -132,7 +132,13 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
 
         cursor.execute(sql, (first_name, last_name, full_name, balance, username, role, pin_hash))
 
-        return True
+        sql = "select id from accounts where username = %s"
+
+        cursor.execute(sql, (username,))
+
+        result = cursor.fetchone()
+
+        return result
 
     except APIError:
         conn.rollback()
