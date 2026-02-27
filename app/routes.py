@@ -243,8 +243,9 @@ def create_user_route(current_username):
             first_name=first_name,
             last_name=last_name,
             balance=start_balance,
-            username = username,
-            role = role,
+            username=username,
+            role=role,
+            pin=pin,
         )
 
         return jsonify({"message": "User created", "id": new_account.id, "username": username}), 201
