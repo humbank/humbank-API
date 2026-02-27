@@ -124,14 +124,10 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
 
-        if username_exists(username):
-            raise APIError(message="User already in place", status_code=403)
-
         pin_hash = hash_pin(pin)
         full_name = f"{str(first_name)} {str(last_name)}"
 
-        sql = "insert into accounts (first_name, last_name, full_name, balance, username, role, pin_hash) " \
-        "values(%s, %s, %s, %s, %s, %s, %s)"
+        sql = "insert into accounts (first_name, last_name, full_name, balance, username, role, pin_hash) values(%s, %s, %s, %s, %s, %s, %s)"
 
         cursor.execute(sql, (first_name, last_name, full_name, balance, username, role, pin_hash))
 

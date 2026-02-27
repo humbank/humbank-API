@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account)
 from app.db.business import (get_business_balance)
+from app.db.connection import username_exists
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, 
@@ -232,6 +233,9 @@ def create_user_route(current_username):
         
         pin = str(pin)
         username = normalize_username(username=username)
+
+        if username_exists(username):
+            raise APIError(message="User already in place", status_code=403)
         
         if not validate_username(username=username):
             return jsonify("Username must be 3-25 characters, lowercase letters, "
