@@ -1,36 +1,6 @@
-from .connection import getBank
+from .connection import (getBank, id_exists, username_exists, business_name_exists)
 from app.error import APIError
 
-
-def id_exists(id):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select id from accounts where id = %s;", (id,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    
-    return result is not None
-
-def username_exists(username):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select username from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    
-    return result is not None
-
-def business_name_exists(business_name):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select business_name from business_accounts where business_name = %s;", (business_name,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    
-    return result is not None
 
 
 
