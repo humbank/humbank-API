@@ -153,7 +153,7 @@ def get_user_account_route(current_username):
                         "balance": user["balance"], 
                         "role": user["role"],  
                         "updated_at": isoformat_german(user["updated_at"]), 
-                        "full_name": user.full_name()}
+                        "full_name": user["full_name"]}
                     ), 200
     
     except APIError as e:
