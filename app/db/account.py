@@ -1,5 +1,6 @@
 from .connection import (getBank, id_exists, username_exists, business_name_exists)
 from app.error import APIError
+from app.auth import hash_pin
 
 
 
@@ -48,7 +49,7 @@ def get_user_account(username):
 
         results = cursor.fetchall()[0]
 
-        full_name = results["first_name"] + " " + results["last_name"]
+        full_name = f"{results["first_name"]} {results["last_name"]}"
 
         results["full_name"] = full_name
 
@@ -104,9 +105,33 @@ def get_all_user_accounts():
 
         results = cursor.fetchall()
 
-        print(results)
-
         return results
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if cursor: conn.close()
+
+
+# ----------------------------------------
+#       CREATE NEW USER ACCOUNT
+# ----------------------------------------
+def create_new_user_account(first_name, last_name, balance, username, role, pin):
+    try:
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        pin_hash = hash_pin(pin)
+        full_name = f"{str(first_name)} {str(last_name)}"
+
+        sql = "insert into accounts set values(%s, %s, %s, %s, %s, %s, %s)"
+
+        cursor.execute(sql, (first_name, last_name, full_name, balance, username, role, pin_hash))
+
+        return True
 
     except APIError:
         conn.rollback()

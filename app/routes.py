@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
-from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts)
+from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account)
 from app.db.business import (get_business_balance)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
@@ -239,18 +239,13 @@ def create_user_route(current_username):
         
         start_balance = 100
         
-        new_account = Account(
+        new_account = create_new_user_account(
             first_name=first_name,
             last_name=last_name,
             balance=start_balance,
             username = username,
             role = role,
         )
-        new_account.set_pin(pin)
-
-        from . import db
-        db.session.add(new_account)
-        db.session.commit()
 
         return jsonify({"message": "User created", "id": new_account.id, "username": username}), 201
 

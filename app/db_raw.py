@@ -34,28 +34,28 @@ def business_name_exists(business_name):
     return result is not None
 
 
-def get_user_balance(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="Username not found", status_code=404)
+# def get_user_balance(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="Username not found", status_code=404)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = "select balance from accounts where username = %s;"
+#         sql = "select balance from accounts where username = %s;"
 
-        cursor.execute(sql, (username,))
-        results = cursor.fetchone()
+#         cursor.execute(sql, (username,))
+#         results = cursor.fetchone()
 
-        return results["balance"]
+#         return results["balance"]
 
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
 
-    finally:
-        if cursor: cursor.close()
-        if cursor: conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         if cursor: conn.close()
 
 
 
