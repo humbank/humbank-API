@@ -124,7 +124,7 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
 
-        if username_exists():
+        if username_exists(username):
             raise APIError(message="User already in place", status_code=403)
 
         pin_hash = hash_pin(pin)
