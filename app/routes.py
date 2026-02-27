@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
-from app.db.account import (get_user_account, get_user_balance, get_business_balance)
+from app.db.account import (get_user_account, get_user_balance, )
+from app.db.business import (get_business_balance)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
