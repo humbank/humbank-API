@@ -248,7 +248,7 @@ def create_user_route(current_username):
             pin=pin,
         )
 
-        return jsonify({"message": "User created", "id": id, "username": username}), 201
+        return jsonify({"message": "User created", "id": id[0], "username": username}), 201
 
 
     except APIError as e:
