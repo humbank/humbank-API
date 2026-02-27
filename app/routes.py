@@ -149,10 +149,10 @@ def get_user_account_route(current_username):
             raise APIError(message="User not found", status_code=404)
         
         
-        return jsonify({"username": user.username, 
-                        "balance": user.balance, 
-                        "role": user.role,  
-                        "updated_at": isoformat_german(user.updated_at), 
+        return jsonify({"username": user["username"], 
+                        "balance": user["balance"], 
+                        "role": user["role"],  
+                        "updated_at": isoformat_german(user["updated_at"]), 
                         "full_name": user.full_name()}
                     ), 200
     

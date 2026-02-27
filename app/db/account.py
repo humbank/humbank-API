@@ -41,9 +41,13 @@ def get_user_account(username):
 
         cursor.execute(sql, (username,))
 
-        results = cursor.fetchall()
+        results = cursor.fetchall()[0]
 
-        return results[0]
+        full_name = results["first_name"] + results["last_name"]
+
+        results.append(full_name)
+
+        return results
 
     except APIError:
         conn.rollback()
