@@ -45,7 +45,7 @@ def get_user_account(username):
 
         full_name = results["first_name"] + results["last_name"]
 
-        results.append(full_name)
+        results["full_name"] = full_name
 
         return results
 
