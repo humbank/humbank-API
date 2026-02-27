@@ -398,34 +398,34 @@ def get_business_id_by_username(username):
         if cursor: cursor.close()
         conn.close()
 
-# ---------------------------------
-#       GET BUSINESS BALANCE
-# ---------------------------------
-def get_business_balance(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # ---------------------------------
+# #       GET BUSINESS BALANCE
+# # ---------------------------------
+# def get_business_balance(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = "select balance from business_accounts where owner_username = %s;"
+#         sql = "select balance from business_accounts where owner_username = %s;"
 
-        cursor.execute(sql, (username,))
+#         cursor.execute(sql, (username,))
 
-        row = cursor.fetchone()
+#         row = cursor.fetchone()
 
-        if not row:
-            raise APIError(message="Balance missing. Alert devs", status_code=500)
+#         if not row:
+#             raise APIError(message="Balance missing. Alert devs", status_code=500)
 
-        return {
-            "balance": float(row["balance"])
-        }
+#         return {
+#             "balance": float(row["balance"])
+#         }
 
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
 
-    finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         if conn: conn.close()
