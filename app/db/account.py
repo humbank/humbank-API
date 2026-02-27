@@ -43,7 +43,7 @@ def get_user_account(username):
 
         results = cursor.fetchall()[0]
 
-        full_name = results["first_name"] + results["last_name"]
+        full_name = results["first_name"] + " " + results["last_name"]
 
         results["full_name"] = full_name
 
