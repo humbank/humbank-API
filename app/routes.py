@@ -143,7 +143,7 @@ def get_user_balance_route(current_username):
 @require_auth
 def get_user_account_route(current_username):
     try:
-        user = Account.query.filter_by(username=current_username).first()
+        user = get_user_account()
 
         if not user:
             raise APIError(message="User not found", status_code=404)
