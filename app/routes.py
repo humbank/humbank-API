@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
-from app.db.account import (get_user_account, get_user_balance, )
+from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts)
 from app.db.business import (get_business_balance)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
-from .db_raw import (get_user_balance, execute_transfer, get_todays_transactions, transactions_amount, 
+from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, 
                      username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
                      get_updated_accounts_after_time, todays_transaction_amount
                     )
@@ -166,19 +166,19 @@ def get_user_account_route(current_username):
 @require_auth
 def get_all_users_route(current_username):
     try:
-        users = Account.query.all()
+        users = get_all_user_accounts()
 
         if not users:
             raise APIError(message="Users not found", status_code=404)
 
         return jsonify([
             {
-                "username": u.username,
-                "role": u.role,
-                "updated_at": isoformat_german(u.updated_at),
-                "full_name": u.full_name(),
-                "deleted_at": u.deleted_at,
-                "banned_at": u.banned_at,
+                "username": u["username"],
+                "role": u["role"],
+                "updated_at": isoformat_german(u["updated_at"]),
+                "full_name": u["full_name"],
+                "deleted_at": u["deleted_at"],
+                "banned_at": u["banned_at"],
             }
             for u in users
         ]), 200
