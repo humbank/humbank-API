@@ -160,7 +160,7 @@ def get_user_account_route(current_username):
         return jsonify(e.to_dict()), e.status_code
     
 # -----------------------------
-#       GET ALL USER ACCOUNTS
+#       GET ALL USERS
 # -----------------------------
 @api.route("/get_all_users", methods=["GET"])
 @require_auth

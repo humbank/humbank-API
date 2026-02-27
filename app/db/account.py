@@ -101,9 +101,8 @@ def get_all_user_accounts():
         sql = "select * from accounts"
 
         cursor.execute(sql)
-        print("works")
 
-        results = cursor.fetchall()[0]
+        results = cursor.fetchall()
 
         print(results)
 
