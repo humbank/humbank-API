@@ -131,7 +131,7 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
 
         cursor.execute(sql, (first_name, last_name, full_name, balance, username, role, pin_hash))
 
-        user_id = cursor.lastrowid()
+        user_id = cursor.lastrowid
 
         conn.commit()
 
