@@ -29,7 +29,7 @@ def get_user_balance(username):
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
 
 
 # ----------------------------------------
@@ -61,7 +61,7 @@ def get_user_account(username):
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
 
 
 # ----------------------------------------
@@ -89,7 +89,7 @@ def get_user_account(username):
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
 
 # ----------------------------------------
 #       GET ALL USER ACCOUNTS
@@ -113,7 +113,7 @@ def get_all_user_accounts():
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
 
 
 # ----------------------------------------
@@ -131,13 +131,11 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
 
         cursor.execute(sql, (first_name, last_name, full_name, balance, username, role, pin_hash))
 
-        sql = "select id from accounts where username = %s"
+        user_id = cursor.lastrowid()
 
-        cursor.execute(sql, (username,))
+        conn.commit()
 
-        result = cursor.fetchone()
-
-        return result
+        return user_id
 
     except APIError:
         conn.rollback()
@@ -145,4 +143,4 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
 
     finally:
         if cursor: cursor.close()
-        if cursor: conn.close()
+        if conn: conn.close()
