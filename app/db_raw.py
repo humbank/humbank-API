@@ -342,33 +342,33 @@ def get_updated_accounts_after_time(username, time):
 
 
 
-# ------------------------------------------------
-#       GET USER ID BY USERNAME (for business)
-# ------------------------------------------------
-def get_user_id_by_username(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # ------------------------------------------------
+# #       GET USER ID BY USERNAME
+# # ------------------------------------------------
+# def get_user_id_by_username(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = """
-                select id from accounts
-                where username = %s;"""
+#         sql = """
+#                 select id from accounts
+#                 where username = %s;"""
         
-        cursor.execute(sql, (username,))
-        results = cursor.fetchone()
+#         cursor.execute(sql, (username,))
+#         results = cursor.fetchone()
 
-        return results["id"]
+#         return results["id"]
     
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
     
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
 
 # -----------------------------------

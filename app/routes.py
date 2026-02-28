@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account)
-from app.db.business import (get_business_balance)
-from app.db.connection import username_exists
+from app.db.business import (get_business_balance, create_business, )
+from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, 
-                     username_exists, business_name_exists, get_user_id_by_username, execute_transfer_to_business,
+                      get_user_id_by_username, execute_transfer_to_business,
                      get_updated_accounts_after_time, todays_transaction_amount
                     )
 from datetime import datetime, timezone
@@ -266,7 +266,6 @@ def create_user_route(current_username):
 @require_auth
 @require_role("admin")
 def create_business_route(current_username):
-    from . import db
     try:
         data = request.get_json() or {}
         business_name = data.get("business_name")
@@ -299,57 +298,15 @@ def create_business_route(current_username):
         if not username_exists(owner_username):
             raise APIError(message="User not found", status_code=404)
         
-        if not can_create_business(owner_username, limit=1):
-            raise APIError(message="Owner reached business limit", status_code=403)
-        
-        owner_id = get_user_id_by_username(owner_username)
         
         START_BALANCE = 0
         
-        new_business_account = BusinessAccount(
-            business_name = business_name,
-            owner_id = owner_id,
-            owner_username = owner_username,
-            balance=START_BALANCE,
-        )
-        new_business_account.set_pin(pin)
+        business_id = create_business(owner_username, START_BALANCE, business_name, pin, description, role)
 
         
+
+
         
-        db.session.add(new_business_account)
-        db.session.flush()
-
-        #add description to description file
-        descr_file = "business_descr.json"
-        deleted_file = "business_deleted.json"
-        data = {}
-        if os.path.exists(descr_file):
-            with open(descr_file, "r", encoding="utf-8") as file:
-                try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    data = {}
-
-        is_deleted = False
-        with open(deleted_file, "r", encoding="utf-8") as file:
-            try:
-                contents = json.load(file)
-                if str(new_business_account.id) in contents:
-                    is_deleted = True
-                
-            except Exception as e:
-                return jsonify(str(e)), 520
-            
-        if is_deleted:
-            raise APIError(message="Business is disabled", status_code=401)
-
-
-        # Add new business
-        data[new_business_account.id] = description
-
-        # Write back
-        with open(descr_file, "w") as file:
-            json.dump(data, file)
 
         membership = BusinessMember(
             user_id=owner_id,
@@ -357,11 +314,8 @@ def create_business_route(current_username):
             business_id=new_business_account.id,
             role="owner"
         )
-        db.session.add(membership)
 
-        db.session.commit()
-
-        return jsonify({"message": "Business created", "id": new_business_account.id}), 201
+        return jsonify({"message": "Business created", "id": business_id}), 201
     
     except IntegrityError as e:
         db.session.rollback()
@@ -372,12 +326,7 @@ def create_business_route(current_username):
         db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
     
-# --------------------------------
-#     BUSINESS CREATION HELPER
-# --------------------------------
-def can_create_business(username, limit=1):
-    active_count = BusinessAccount.query.filter(BusinessAccount.owner_username==username, BusinessAccount.deleted_at.is_(None)).count()
-    return active_count < limit
+
 
 # --------------------------------
 #     DISABLE BUSINESS
