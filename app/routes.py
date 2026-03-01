@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account)
-from app.db.business import (get_business_balance, create_business, )
+from app.db.business import (get_business_balance, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
@@ -316,47 +316,19 @@ def create_business_route(current_username):
 @require_auth
 @require_role("admin")
 def disable_business_route(current_username):
-    from . import db
     try:
         data = request.get_json() or {}
 
-        business_id = data.get("business_id")
-
+        owner_username = data.get("owner_username")
         
-        business = BusinessAccount.query.get(business_id)
+        if not owner_username:
+            raise APIError(message="Owner username missing", status_code=400)
         
-        if not business:
-            raise APIError(message="Business not found", status_code=404)
-        
-        if not business_id:
-            raise APIError(message="Business Id missing", status_code=400)
-        
-        if business.deleted_at is not None:
-            raise APIError(message="Business already disabled", status_code=422)
-
-        business.deleted_at = db.func.now(timezone.utc)
-        db.session.commit()
-
-        deleted_file = "business_deleted.json"
-        data = {}
-        if os.path.exists(deleted_file):
-            with open(deleted_file, "r", encoding="utf-8") as file:
-                try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    data = {}
-
-        # Add new business
-        data[business_id] = "disabled"
-
-        # Write back
-        with open(deleted_file, "w") as file:
-            json.dump(data, file)
+        disable_business(owner_username)
 
         return jsonify("Business disabled"), 200
 
     except APIError as e:
-        db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
 
 

@@ -158,3 +158,32 @@ def create_business_member(user_id, username, business_id, member_role):
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ---------------------------------
+#       DISABLE BUSINESS
+# ---------------------------------
+def disable_business(owner_username):
+    try:
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        
+        if business_is_deleted(owner_username):
+            raise APIError(message="Business was already deleted", status_code=422)
+
+        sql = "update table accounts set deleted_at = now() where owner_username = %s"
+
+        cursor.execute(sql, (owner_username,))
+
+        conn.commit()
+
+
+            
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
