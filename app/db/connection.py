@@ -57,6 +57,7 @@ def business_is_deleted(business_name):
     cursor = conn.cursor()
     cursor.execute("select deleted_at from business_accounts where business_name = %s;", (business_name,))
     result = cursor.fetchone()
+    print(result)
     cursor.close()
     conn.close()
     
