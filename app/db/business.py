@@ -172,7 +172,7 @@ def disable_business(owner_username):
         if business_is_deleted(owner_username):
             raise APIError(message="Business was already deleted", status_code=422)
 
-        sql = "update business_accounts set deleted_at = now() where owner_username = %s"
+        sql = "update business_accounts set deleted_at = now() where owner_username = %s;"
 
         cursor.execute(sql, (owner_username,))
 
