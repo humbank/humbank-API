@@ -303,27 +303,9 @@ def create_business_route(current_username):
         
         business_id = create_business(owner_username, START_BALANCE, business_name, pin, description, role)
 
-        
-
-
-        
-
-        membership = BusinessMember(
-            user_id=owner_id,
-            username = owner_username,
-            business_id=new_business_account.id,
-            role="owner"
-        )
-
         return jsonify({"message": "Business created", "id": business_id}), 201
     
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({"Error":"Business name already exists"}), 400
-    
-
     except APIError as e:
-        db.session.rollback()
         return jsonify(e.to_dict()), e.status_code
     
 

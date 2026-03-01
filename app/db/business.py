@@ -113,6 +113,8 @@ def create_business(owner_username, start_balance, business_name, pin, descripti
 
         conn.commit()
 
+        create_business_member(owner_id, owner_username, business_id, member_role)
+
         return business_id
             
     except APIError:
@@ -141,34 +143,12 @@ def create_business_member(user_id, username, business_id, member_role):
         cursor = conn.cursor(dictionary=True)
 
 
-        sql = "insert into business_members (business_id, balance, pin_hash, owner_id, owner_username) values" \
+        sql = "insert into business_members (business_id, user_id, role, username) values" \
         "(%s, %s, %s, %s, %s)"
 
-        cursor.execute(sql, (business_name, start_balance, pin_hash, owner_id, owner_username))
-
-        business_id = cursor.lastrowid
-
-
-        #add description to description file
-        descr_file = "business_descr.json"
-        data = {}
-        if os.path.exists(descr_file):
-            with open(descr_file, "r", encoding="utf-8") as file:
-                try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    data = {}
-
-        # Add new business
-        data[business_id] = description
-
-        # Write back
-        with open(descr_file, "w") as file:
-            json.dump(data, file)
+        cursor.execute(sql, (business_id, user_id, member_role, username))
 
         conn.commit()
-
-        return business_id
             
     except APIError:
         conn.rollback()
