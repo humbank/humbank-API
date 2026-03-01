@@ -129,7 +129,7 @@ def create_business(owner_username, start_balance, business_name, pin, descripti
 #     BUSINESS CREATION HELPER
 # --------------------------------
 def can_create_business(username, cursor, limit=1):
-    sql = "select count(*) from business where owner_username = %s and deleted_at = null;"
+    sql = "select count(*) from business_accounts where owner_username = %s and deleted_at = null;"
     active_count = cursor.execute(sql, (username,))
     return active_count < limit
 
