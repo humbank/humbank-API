@@ -5,8 +5,7 @@ from app.db.business import (get_business_balance, create_business, )
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
-from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, 
-                      get_user_id_by_username, execute_transfer_to_business,
+from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, execute_transfer_to_business,
                      get_updated_accounts_after_time, todays_transaction_amount
                     )
 from datetime import datetime, timezone
