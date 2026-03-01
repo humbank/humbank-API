@@ -300,7 +300,7 @@ def create_business_route(current_username):
         
         START_BALANCE = 0
         
-        business_id = create_business(owner_username, START_BALANCE, business_name, pin, description, role)
+        business_id = create_business(owner_username, START_BALANCE, business_name, pin, description, "owner")
 
         return jsonify({"message": "Business created", "id": business_id}), 201
     
