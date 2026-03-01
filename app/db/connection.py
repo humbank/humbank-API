@@ -52,10 +52,10 @@ def business_name_exists(business_name):
     
     return result is not None
 
-def business_is_deleted(business_name):
+def business_is_deleted(owner_username):
     conn = getBank()
     cursor = conn.cursor()
-    cursor.execute("select deleted_at from business_accounts where business_name = %s;", (business_name,))
+    cursor.execute("select deleted_at from business_accounts where owner_username = %s;", (owner_username,))
     result = cursor.fetchone()
     print(result)
     cursor.close()
