@@ -10,9 +10,7 @@ from app.auth import hash_pin
 # ----------------------------------------
 def get_user_balance(username):
     try:
-        if not (username and username_exists(username)):
-            raise APIError(message="Username not found", status_code=404)
-        
+       
         conn = getBank()
         cursor = conn.cursor(dictionary=True)
 
@@ -52,34 +50,6 @@ def get_user_account(username):
         full_name = f"{results["first_name"]} {results["last_name"]}"
 
         results["full_name"] = full_name
-
-        return results
-
-    except APIError:
-        conn.rollback()
-        raise
-
-    finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
-
-
-# ----------------------------------------
-#       GET USER ACCOUNT
-# ----------------------------------------
-def get_user_account(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="Username not found", status_code=404)
-        
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
-
-        sql = "select * from accounts where username = %s"
-
-        cursor.execute(sql, (username,))
-
-        results = cursor.fetchall()[0]
 
         return results
 
@@ -141,6 +111,105 @@ def create_new_user_account(first_name, last_name, balance, username, role, pin)
         conn.rollback()
         raise
 
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# ----------------------------------------
+#       DISABLE USER ACCOUNT
+# ----------------------------------------
+def disable_user(username):
+    try:
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = "update accounts set deleted_at = now() where username = %s;"
+
+        cursor.execute(sql, (username, ))
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# ----------------------------------------
+#       BAN USER ACCOUNTS
+# ----------------------------------------
+def ban_users(users_dict):
+    try:
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        for username in users_dict:
+            sql = "update accounts set banned_at = now() where username = %s and not role = 'admin';"
+            cursor.execute(sql, (username, ))
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+# ----------------------------------------
+#       DEBAN USER ACCOUNTS
+# ----------------------------------------
+def deban_users(users_dict):
+    try:
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        for username in users_dict:
+            sql = "update accounts set banned_at = null where username = %s;"
+            cursor.execute(sql, (username, ))
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+
+
+
+# ---------------------------------------
+#       GET UPDATED ACCOUNTS AFTER TIME
+# ---------------------------------------
+def get_updated_accounts_after_time(time):
+    try:   
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+                select 
+                    username, 
+                    role, 
+                    updated_at, 
+                    deleted_at,
+                    banned_at,
+                    concat(first_name, ' ', last_name) AS full_name
+                from accounts
+                where updated_at >= %s;
+            """
+        cursor.execute(sql, (time, ))
+        results = cursor.fetchall()
+
+        return results
+    
+    except APIError:
+        conn.rollback()
+        raise
+        
     finally:
         if cursor: cursor.close()
         if conn: conn.close()

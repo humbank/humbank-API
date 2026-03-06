@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
-from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account)
+from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
+                            get_updated_accounts_after_time)
 from app.db.business import (get_business_balance, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
 from .db_raw import (execute_transfer, get_todays_transactions, transactions_amount, execute_transfer_to_business,
-                     get_updated_accounts_after_time, todays_transaction_amount
+                     todays_transaction_amount
                     )
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -84,6 +85,9 @@ def login():
 
         username = data["username"].lower().strip()
         pin = data["pin"]
+
+        if not username_exists(username):
+            raise APIError(message="User not found", status_code=404)
 
         # Fetch user via SQLAlchemy model and username
         user = get_user_account(username)
@@ -347,22 +351,23 @@ def disable_user_route(current_username):
 
         if not username:
             raise APIError(message="Username missing", status_code=400)
+        
+        if not username_exists(username):
+            raise APIError(message="Username not existing", status_code=400)
 
-        user = Account.query.filter_by(username=username).first()
+        user = get_user_account()
 
         if not user:
             raise APIError(message="User not found", status_code=404)
     
-        from . import db
-
-        user.deleted_at = db.func.now(timezone.utc)
-        db.session.commit()
+        disable_user(username)
 
         return jsonify("User is disabled"), 200
     
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
-    
+
+
 # ---------------------
 #     BAN USERS
 # ---------------------
@@ -382,30 +387,15 @@ def ban_users_route(current_username):
             if not username_exists(username):
                 raise APIError(message="Username not found", status_code=404)
         
-        users = []
+        ban_users(usernames)
 
-        for username in usernames:
-            user = Account.query.filter_by(username=username).first()
-
-            if not user:
-                raise APIError(message="User not found", status_code=404)
-            
-            users.append(user)
-    
-        from . import db
-
-        for user in users:
-            if user.role == "admin":
-                raise APIError(message="Tried to ban admin", status_code=403)
-            
-            user.banned_at = db.func.now(timezone.utc)
-            db.session.commit()
 
         return jsonify("Users are banned"), 200
     
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
-    
+
+
 # ---------------------
 #     DEBAN USERS
 # ---------------------
@@ -425,19 +415,7 @@ def deban_users_route(current_username):
             if not username_exists(username):
                 raise APIError(message=f"Username {username} not found", status_code=404)
         
-        users = []
-
-        for username in usernames:
-            user = Account.query.filter(username=username)
-
-            if not user:
-                raise APIError(message="User not found", status_code=404)
-    
-        from . import db
-
-        for user in users:
-            user.banned_at = None
-            db.session.commit()
+        deban_users(usernames)
 
         return jsonify("Users are debanned"), 200
     
@@ -598,7 +576,7 @@ def get_updated_accounts_after_time_route(current_username):
             raise APIError(message="Time parameter missing", status_code=400)
         formatted_search_time = isoformat_britain(time_input)
 
-        results = get_updated_accounts_after_time(current_username, formatted_search_time)
+        results = get_updated_accounts_after_time(formatted_search_time, )
 
 
         return jsonify([

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from flask import request, jsonify
+from flask import jsonify
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (
     create_access_token, 
@@ -10,6 +10,7 @@ from flask_jwt_extended import (
 from functools import wraps
 import re
 from .error import APIError
+from app.db.connection import username_exists
 
 
 bcrypt = Bcrypt()
@@ -60,6 +61,8 @@ def require_auth(func):
             username = get_jwt_identity()
             claims = get_jwt()
 
+            if not username_exists(username):
+                raise APIError(message="User not found", status_code=404)
             
             if claims["deleted"]:
                 raise APIError(message="User disabled", status_code=401)
@@ -109,8 +112,8 @@ def require_role(*allowed_roles):
             try:
                 verify_jwt_in_request()
 
-                # Get user ID from the token
-                username = get_jwt_identity()
+            
+                #username = get_jwt_identity()
                 claims = get_jwt()
                 
                 if claims["role"] not in allowed_roles:

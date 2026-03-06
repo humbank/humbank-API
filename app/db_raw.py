@@ -301,44 +301,44 @@ def todays_transaction_amount(username, start_of_day, now):
         if cursor: cursor.close()
         conn.close()
 
-# ---------------------------------------
-#       GET UPDATED ACCOUNTS AFTER TIME
-# ---------------------------------------
-def get_updated_accounts_after_time(username, time):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # ---------------------------------------
+# #       GET UPDATED ACCOUNTS AFTER TIME
+# # ---------------------------------------
+# def get_updated_accounts_after_time(username, time):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        if not(time):
-            raise APIError(message="Date is missing", status_code=400)
+#         if not(time):
+#             raise APIError(message="Date is missing", status_code=400)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = """
-                SELECT 
-                    username, 
-                    role, 
-                    updated_at, 
-                    deleted_at,
-                    banned_at,
-                    CONCAT(first_name, ' ', last_name) AS full_name
-                FROM accounts
-                WHERE username = %s
-                AND updated_at >= %s;
-            """
-        cursor.execute(sql, (username, time))
-        results = cursor.fetchall()
+#         sql = """
+#                 SELECT 
+#                     username, 
+#                     role, 
+#                     updated_at, 
+#                     deleted_at,
+#                     banned_at,
+#                     CONCAT(first_name, ' ', last_name) AS full_name
+#                 FROM accounts
+#                 WHERE username = %s
+#                 AND updated_at >= %s;
+#             """
+#         cursor.execute(sql, (username, time))
+#         results = cursor.fetchall()
 
-        return results
+#         return results
     
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
         
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         if conn: conn.close()
 
 
 
