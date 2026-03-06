@@ -213,3 +213,84 @@ def get_updated_accounts_after_time(time):
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ----------------------------------------
+#       EXECUTE TRANSFER WITH FEE AND TAX
+# ----------------------------------------
+def execute_transfer(payer_username, issuer_username, amount, transaction_id, description, fee, taxes):
+
+    conn = getBank()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
+        
+        # Start transaction
+        conn.start_transaction()
+
+        #update the balances
+        cursor.execute(
+            "update accounts set balance = balance - %s where username = %s and ",
+            (payer_username,)
+        )
+
+        payer = cursor.fetchone()
+
+        if not payer:
+            raise APIError(message="Payer not found", status_code=404)
+
+        if payer["balance"] < amount:
+            raise APIError(message="Insufficient funds", status_code=403)
+
+        # Lock issuer
+        cursor.execute(
+            "select balance from accounts where username = %s for update",
+            (issuer_username,)
+        )
+
+        issuer = cursor.fetchone()
+
+        if not issuer:
+            raise APIError(message="Issuer not found", status_code=404)
+        
+        cursor.execute(
+            "select balance from business_accounts where business_name = %s for update",
+            ("Bank",)
+        )
+
+        bank = cursor.fetchone()
+
+        if not bank:
+            raise APIError(message="Bank not found, Important", status_code=404)
+
+        # Update balances
+        cursor.execute(
+            "update accounts set balance = balance - %s where username = %s",
+            (amount, payer_username)
+        )
+        cursor.execute(
+            "update accounts set balance = balance + %s where username = %s",
+            (netto_amount, issuer_username)
+        )
+        cursor.execute(
+            "update business_accounts set balance = balance + %s where business_name = %s",
+            (amount * fee, "Bank")
+        )
+
+        # Insert transaction
+        cursor.execute(
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, netto_amount, description, bank_fee, trans_tax) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (transaction_id, payer_username, issuer_username, amount, netto_amount, description, fee, taxes)
+        )
+
+        conn.commit()
+        return True
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        conn.close()
