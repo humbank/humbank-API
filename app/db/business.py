@@ -187,3 +187,51 @@ def disable_business(owner_username):
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ------------------------------------
+#       EXECUTE TRANSFER TO BUSINESS
+# ------------------------------------
+def execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description, fee, taxes):
+
+    conn = getBank()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Start transaction
+        conn.start_transaction()
+
+        netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
+        fee_amount = amount - netto_amount
+
+        #update the balance of payer
+        cursor.execute(
+            "update accounts set balance = balance - %s where username = %s and balance >= %s;",
+            (amount, payer_username, amount)
+        )
+
+        if cursor.rowcount <= 0:
+            raise APIError(message="Insufficient funds", status_code=403)
+
+        #update business balance
+        cursor.execute(
+            "update business_accounts set balance = balance + %s where business_name = %s;",
+            (netto_amount, issuer_business_name)
+        )
+
+        # Insert transaction
+        cursor.execute(
+            "insert into transactions (transaction_id, payer_username, issuer_username, amount, netto_amount, description, bank_fee, trans_tax) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (transaction_id, payer_username, issuer_business_name, amount, netto_amount, description, fee, taxes)
+        )
+
+        conn.commit()
+        return True
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()

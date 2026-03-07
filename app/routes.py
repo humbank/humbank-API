@@ -454,12 +454,6 @@ def execute_transfer_route(current_username):
         
         result = execute_transfer(payer_username, issuer_username, absolute_amount, transaction_id, description, BANK_FEE, TAXES["Status3"])
         
-        #fee_result = pay_fee(issuer_username, absolute_amount*BANK_FEE)
-        
-        #if fee_result is not True:
-        #    raise APIError(message="Transfer went wrong, apparent server error", status_code=500)
-
-        
         if result is True:
             return jsonify("Transfer completed"), 200
         else:
@@ -499,7 +493,7 @@ def execute_transfer_to_business_route(current_username):
         if not business_name_exists(issuer_business_name):
             raise APIError(message="Business not found", status_code=404)
 
-        result = execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description)
+        result = execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description, BANK_FEE, TAXES["Status3"])
 
         if result is True:
             return jsonify("Transfer completed"), 200

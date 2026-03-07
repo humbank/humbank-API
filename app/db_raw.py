@@ -141,67 +141,67 @@ def business_name_exists(business_name):
 #         conn.close()
 
 
-# ------------------------------------
-#       EXECUTE TRANSFER TO BUSINESS
-# ------------------------------------
-def execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description):
+# # ------------------------------------
+# #       EXECUTE TRANSFER TO BUSINESS
+# # ------------------------------------
+# def execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description):
 
-    conn = getBank()
-    cursor = conn.cursor(dictionary=True)
+#     conn = getBank()
+#     cursor = conn.cursor(dictionary=True)
 
-    try:
-        # Start transaction
-        conn.start_transaction()
+#     try:
+#         # Start transaction
+#         conn.start_transaction()
 
-        # Lock payer
-        cursor.execute(
-            "select balance from accounts where username = %s for update",
-            (payer_username,)
-        )
+#         # Lock payer
+#         cursor.execute(
+#             "select balance from accounts where username = %s for update",
+#             (payer_username,)
+#         )
 
-        payer = cursor.fetchone()
-        if not payer:
-            raise APIError(message="Payer not found", status_code=404)
+#         payer = cursor.fetchone()
+#         if not payer:
+#             raise APIError(message="Payer not found", status_code=404)
 
-        if payer["balance"] < amount:
-            raise APIError(message="Insufficient funds", status_code=403)
+#         if payer["balance"] < amount:
+#             raise APIError(message="Insufficient funds", status_code=403)
 
-        # Lock issuer
-        cursor.execute(
-            "select balance from business_accounts where business_name = %s for update",
-            (issuer_business_name,)
-        )
+#         # Lock issuer
+#         cursor.execute(
+#             "select balance from business_accounts where business_name = %s for update",
+#             (issuer_business_name,)
+#         )
 
-        issuer = cursor.fetchone()
-        if not issuer:
-            raise APIError(message="Issuer not found", status_code=404)
+#         issuer = cursor.fetchone()
+#         if not issuer:
+#             raise APIError(message="Issuer not found", status_code=404)
 
-        # Update balances
-        cursor.execute(
-            "update accounts set balance = balance - %s where username = %s",
-            (amount, payer_username)
-        )
-        cursor.execute(
-            "update business_accounts set balance = balance + %s where business_name = %s",
-            (amount, issuer_business_name)
-        )
+#         # Update balances
+#         cursor.execute(
+#             "update accounts set balance = balance - %s where username = %s",
+#             (amount, payer_username)
+#         )
+#         cursor.execute(
+#             "update business_accounts set balance = balance + %s where business_name = %s",
+#             (amount, issuer_business_name)
+#         )
 
-        # Insert transaction
-        cursor.execute(
-            "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
-            (transaction_id, payer_username, issuer_business_name, amount, description)
-        )
+#         # Insert transaction
+#         cursor.execute(
+#             "insert into transactions (transaction_id, payer_username, issuer_username, amount, description) values (%s, %s, %s, %s, %s)",
+#             (transaction_id, payer_username, issuer_business_name, amount, description)
+#         )
 
-        conn.commit()
-        return True
+#         conn.commit()
+#         return True
 
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
 
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
 
 # ---------------------------------------
