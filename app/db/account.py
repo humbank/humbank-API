@@ -226,6 +226,8 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
     try:
         netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
         fee_amount = amount - netto_amount
+
+        print(netto_amount, fee_amount)
         
         # Start transaction
         conn.start_transaction()
