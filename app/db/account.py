@@ -225,58 +225,34 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
 
     try:
         netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
+        fee_amount = amount - netto_amount
         
         # Start transaction
         conn.start_transaction()
 
-        #update the balances
+        #update the balance of payer
         cursor.execute(
-            "update accounts set balance = balance - %s where username = %s and ",
-            (payer_username,)
+            "update accounts set balance = balance - %s where username = %s and balance >= %s;",
+            (amount, payer_username, amount)
         )
 
-        payer = cursor.fetchone()
-
-        if not payer:
-            raise APIError(message="Payer not found", status_code=404)
-
-        if payer["balance"] < amount:
+        if cursor.rowcount <= 0:
             raise APIError(message="Insufficient funds", status_code=403)
 
-        # Lock issuer
+        #update the balance of payer
         cursor.execute(
-            "select balance from accounts where username = %s for update",
-            (issuer_username,)
-        )
-
-        issuer = cursor.fetchone()
-
-        if not issuer:
-            raise APIError(message="Issuer not found", status_code=404)
-        
-        cursor.execute(
-            "select balance from business_accounts where business_name = %s for update",
-            ("Bank",)
-        )
-
-        bank = cursor.fetchone()
-
-        if not bank:
-            raise APIError(message="Bank not found, Important", status_code=404)
-
-        # Update balances
-        cursor.execute(
-            "update accounts set balance = balance - %s where username = %s",
-            (amount, payer_username)
-        )
-        cursor.execute(
-            "update accounts set balance = balance + %s where username = %s",
+            "update accounts set balance = balance + %s where username = %s;",
             (netto_amount, issuer_username)
         )
+
         cursor.execute(
-            "update business_accounts set balance = balance + %s where business_name = %s",
-            (amount * fee, "Bank")
+            "update business_accounts set balance = balance + %s where business_name ='Bank';",
+            (fee_amount)
         )
+
+        if cursor.rowcount <= 0:
+            raise APIError(message="Bank not found, Important", status_code=404)
+
 
         # Insert transaction
         cursor.execute(
@@ -293,4 +269,4 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
 
     finally:
         if cursor: cursor.close()
-        conn.close()
+        if conn: conn.close()
