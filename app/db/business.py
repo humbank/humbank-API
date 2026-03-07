@@ -195,7 +195,7 @@ def disable_business(owner_username):
 def execute_transfer_to_business(payer_username, issuer_business_name, amount, transaction_id, description, fee, taxes):
 
     conn = getBank()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         # Start transaction
@@ -218,6 +218,15 @@ def execute_transfer_to_business(payer_username, issuer_business_name, amount, t
             "update business_accounts set balance = balance + %s where business_name = %s;",
             (netto_amount, issuer_business_name)
         )
+
+        #pay fee to bank
+        cursor.execute(
+            "update business_accounts set balance = balance + %s where business_name ='Bank';",
+            (fee_amount, )
+        )
+
+        if cursor.rowcount <= 0:
+            raise APIError(message="Bank not found, Important", status_code=404)
 
         # Insert transaction
         cursor.execute(

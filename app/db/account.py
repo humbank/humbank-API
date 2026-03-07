@@ -221,7 +221,7 @@ def get_updated_accounts_after_time(time):
 def execute_transfer(payer_username, issuer_username, amount, transaction_id, description, fee, taxes):
 
     conn = getBank()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
@@ -241,15 +241,16 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
         if cursor.rowcount <= 0:
             raise APIError(message="Insufficient funds", status_code=403)
 
-        #update the balance of payer
+        #update the balance of issuer
         cursor.execute(
             "update accounts set balance = balance + %s where username = %s;",
             (netto_amount, issuer_username)
         )
 
+        #pay fee to bank
         cursor.execute(
             "update business_accounts set balance = balance + %s where business_name ='Bank';",
-            (fee_amount)
+            (fee_amount, )
         )
 
         if cursor.rowcount <= 0:
