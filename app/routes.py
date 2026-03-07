@@ -2,11 +2,11 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
                             get_updated_accounts_after_time, execute_transfer)
-from app.db.business import (get_business_balance, create_business, disable_business)
+from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
-from .db_raw import (get_todays_transactions, transactions_amount, execute_transfer_to_business,
+from .db_raw import (get_todays_transactions, transactions_amount, 
                      todays_transaction_amount
                     )
 from datetime import datetime, timezone
