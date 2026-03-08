@@ -1,14 +1,11 @@
-from flask import Blueprint, request, jsonify, send_from_directory
-from sqlalchemy.exc import IntegrityError
+from flask import Blueprint, request, jsonify
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
-                            get_updated_accounts_after_time, execute_transfer)
+                            get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
+                            todays_transaction_amount)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role)
-from .db_raw import (get_todays_transactions, transactions_amount, 
-                     todays_transaction_amount
-                    )
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from .error import APIError
@@ -517,7 +514,7 @@ def todays_transactions_route(current_username):
         results = get_todays_transactions(current_username, start, now)
 
         for entry in results:
-            results[results.index(entry)]["transaction_date"] = isoformat_german(results[results.index(entry)]["transaction_date"])
+            entry["transaction_date"] = isoformat_german(entry["transaction_date"])
 
         return jsonify(results), 200
 

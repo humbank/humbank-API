@@ -1,37 +1,37 @@
-from flask import current_app
-from .error import APIError
-from .db.connection import getBank
+# from flask import current_app
+# from .error import APIError
+# from .db.connection import getBank
 
 
-def id_exists(id):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select id from accounts where id = %s;", (id,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
+# def id_exists(id):
+#     conn = getBank()
+#     cursor = conn.cursor()
+#     cursor.execute("select id from accounts where id = %s;", (id,))
+#     result = cursor.fetchone()
+#     cursor.close()
+#     conn.close()
     
-    return result is not None
+#     return result is not None
 
-def username_exists(username):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select username from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
+# def username_exists(username):
+#     conn = getBank()
+#     cursor = conn.cursor()
+#     cursor.execute("select username from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
+#     result = cursor.fetchone()
+#     cursor.close()
+#     conn.close()
     
-    return result is not None
+#     return result is not None
 
-def business_name_exists(business_name):
-    conn = getBank()
-    cursor = conn.cursor()
-    cursor.execute("select business_name from business_accounts where business_name = %s;", (business_name,))
-    result = cursor.fetchone()
-    cursor.close()
-    conn.close()
+# def business_name_exists(business_name):
+#     conn = getBank()
+#     cursor = conn.cursor()
+#     cursor.execute("select business_name from business_accounts where business_name = %s;", (business_name,))
+#     result = cursor.fetchone()
+#     cursor.close()
+#     conn.close()
     
-    return result is not None
+#     return result is not None
 
 
 # def get_user_balance(username):
@@ -204,102 +204,102 @@ def business_name_exists(business_name):
 #         conn.close()
 
 
-# ---------------------------------------
-#       GET TODAYS TRANSACTIONS 
-# ---------------------------------------
-def get_todays_transactions(username, start_of_day, now):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # ---------------------------------------
+# #       GET TODAYS TRANSACTIONS 
+# # ---------------------------------------
+# def get_todays_transactions(username, start_of_day, now):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        if not(now and start_of_day):
-            raise APIError(message="Dates are missing", status_code=400)
+#         if not(now and start_of_day):
+#             raise APIError(message="Dates are missing", status_code=400)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = """
-            SELECT * from transactions
-            WHERE (payer_username = %s OR issuer_username = %s)
-            AND transaction_date between %s AND %s
-            ORDER BY transaction_date DESC
-        """
+#         sql = """
+#             SELECT * from transactions
+#             WHERE (payer_username = %s OR issuer_username = %s)
+#             AND transaction_date between %s AND %s
+#             ORDER BY transaction_date DESC
+#         """
 
-        cursor.execute(sql, (username, username, start_of_day, now))
-        results = cursor.fetchall()
+#         cursor.execute(sql, (username, username, start_of_day, now))
+#         results = cursor.fetchall()
 
-        return results
+#         return results
     
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
         
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
-# --------------------------------------
-#       GET AMOUNT OF ALL TRANSACTIONS
-# --------------------------------------
-def transactions_amount(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # --------------------------------------
+# #       GET AMOUNT OF ALL TRANSACTIONS
+# # --------------------------------------
+# def transactions_amount(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = """
-            SELECT COUNT(*) as trans_amount from transactions
-            WHERE (payer_username = %s OR issuer_username = %s)
-        """
+#         sql = """
+#             SELECT COUNT(*) as trans_amount from transactions
+#             WHERE (payer_username = %s OR issuer_username = %s)
+#         """
 
-        cursor.execute(sql, (username, username))
-        results = cursor.fetchone()
+#         cursor.execute(sql, (username, username))
+#         results = cursor.fetchone()
 
-        return results
+#         return results
 
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
         
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
-# ---------------------------------------
-#       GET TODAYS TRANSACTION AMOUNT
-# ---------------------------------------
-def todays_transaction_amount(username, start_of_day, now):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # ---------------------------------------
+# #       GET TODAYS TRANSACTION AMOUNT
+# # ---------------------------------------
+# def todays_transaction_amount(username, start_of_day, now):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        if not(now and start_of_day):
-            raise APIError(message="Dates are missing", status_code=400)
+#         if not(now and start_of_day):
+#             raise APIError(message="Dates are missing", status_code=400)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
 
-        sql = """
-            SELECT COUNT(transaction_id) as todays_trans_amount from transactions
-            WHERE (payer_username = %s OR issuer_username = %s)
-            AND transaction_date between %s AND %s
-            ORDER BY transaction_date DESC
-        """
+#         sql = """
+#             SELECT COUNT(transaction_id) as todays_trans_amount from transactions
+#             WHERE (payer_username = %s OR issuer_username = %s)
+#             AND transaction_date between %s AND %s
+#             ORDER BY transaction_date DESC
+#         """
 
-        cursor.execute(sql, (username, username, start_of_day, now))
-        result = cursor.fetchone()
+#         cursor.execute(sql, (username, username, start_of_day, now))
+#         result = cursor.fetchone()
 
-        return result
+#         return result
     
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
         
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
 # # ---------------------------------------
 # #       GET UPDATED ACCOUNTS AFTER TIME
@@ -371,32 +371,32 @@ def todays_transaction_amount(username, start_of_day, now):
 #         conn.close()
 
 
-# -----------------------------------
-#       GET BUSINESS ID BY USERNAME
-# -----------------------------------
-def get_business_id_by_username(username):
-    try:
-        if not (username and username_exists(username)):
-            raise APIError(message="User not found", status_code=404)
+# # -----------------------------------
+# #       GET BUSINESS ID BY USERNAME
+# # -----------------------------------
+# def get_business_id_by_username(username):
+#     try:
+#         if not (username and username_exists(username)):
+#             raise APIError(message="User not found", status_code=404)
         
-        conn = getBank()
-        cursor = conn.cursor(dictionary=True)
+#         conn = getBank()
+#         cursor = conn.cursor(dictionary=True)
         
-        sql = "select id from business_accounts where owner_username = %s;"
+#         sql = "select id from business_accounts where owner_username = %s;"
 
-        cursor.execute(sql, (username, ))
+#         cursor.execute(sql, (username, ))
 
-        business_id = cursor.fetchone()
+#         business_id = cursor.fetchone()
 
-        return business_id["id"]
+#         return business_id["id"]
 
-    except APIError:
-        conn.rollback()
-        raise
+#     except APIError:
+#         conn.rollback()
+#         raise
     
-    finally:
-        if cursor: cursor.close()
-        conn.close()
+#     finally:
+#         if cursor: cursor.close()
+#         conn.close()
 
 # # ---------------------------------
 # #       GET BUSINESS BALANCE

@@ -273,3 +273,93 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ---------------------------------------
+#       GET TODAYS TRANSACTIONS 
+# ---------------------------------------
+def get_todays_transactions(username, start_of_day, now):
+    try:   
+        if not(now and start_of_day):
+            raise APIError(message="Dates are missing", status_code=400)
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT * from transactions
+            WHERE (payer_username = %s OR issuer_username = %s)
+            AND transaction_date between %s AND %s
+            ORDER BY transaction_date DESC
+        """
+
+        cursor.execute(sql, (username, username, start_of_day, now))
+        results = cursor.fetchall()
+
+        return results
+    
+    except APIError:
+        conn.rollback()
+        raise
+        
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+# --------------------------------------
+#       GET AMOUNT OF ALL TRANSACTIONS
+# --------------------------------------
+def transactions_amount(username):
+    try:
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT COUNT(*) as trans_amount from transactions
+            WHERE (payer_username = %s OR issuer_username = %s)
+        """
+
+        cursor.execute(sql, (username, username))
+        results = cursor.fetchone()
+
+        return results
+
+    except APIError:
+        conn.rollback()
+        raise
+        
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+# ---------------------------------------
+#       GET TODAYS TRANSACTION AMOUNT
+# ---------------------------------------
+def todays_transaction_amount(username, start_of_day, now):
+    try:
+        if not(now and start_of_day):
+            raise APIError(message="Dates are missing", status_code=400)
+        
+        conn = getBank()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT COUNT(transaction_id) as todays_trans_amount from transactions
+            WHERE (payer_username = %s OR issuer_username = %s)
+            AND transaction_date between %s AND %s
+            ORDER BY transaction_date DESC
+        """
+
+        cursor.execute(sql, (username, username, start_of_day, now))
+        result = cursor.fetchone()
+
+        return result
+    
+    except APIError:
+        conn.rollback()
+        raise
+        
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
