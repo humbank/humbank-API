@@ -363,3 +363,27 @@ def todays_transaction_amount(username, start_of_day, now):
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+# ----------------------------------------
+#       CHANGE USER ROLE
+# ----------------------------------------
+def change_user_role(username, role):
+    try:
+        conn = getBank()
+        cursor = conn.cursor()
+
+        sql = "update accounts set role = %s where username = %s;"
+
+        cursor.execute(sql, (username, role))
+
+        conn.commit()
+
+        return True
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()

@@ -16,6 +16,9 @@ from app.db.connection import username_exists
 bcrypt = Bcrypt()
 
 
+ROLES = ["admin", "user"]
+
+
 def hash_pin(pin):
     return bcrypt.generate_password_hash(pin).decode("utf-8")
 
@@ -106,6 +109,9 @@ def validate_business_name(business_name: str) -> bool:
 # 6. Check permissions of user's role
 # ------------------------------------
 def require_role(*allowed_roles):
+    if allowed_roles not in ROLES:
+        raise APIError(message="Unknown role", status_code=400)
+    
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):

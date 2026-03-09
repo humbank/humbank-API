@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
                             get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
-                            todays_transaction_amount)
+                            todays_transaction_amount, change_user_role)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
-                   normalize_business_name, validate_business_name, require_role)
+                   normalize_business_name, validate_business_name, require_role, ROLES)
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from .error import APIError
@@ -584,6 +584,25 @@ def get_updated_accounts_after_time_route(current_username):
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
 
+
+# -------------------------
+#       CHANGE USER ROLE
+# -------------------------
+@api.route("/get_user_balance", methods=["GET"])
+@require_auth
+@require_role("admin")
+def get_user_balance_route(current_username, new_role):
+    try:
+        if new_role not in ROLES:
+            raise APIError(message="Unknown role", status_code=400)
+        
+        result = change_user_role(current_username, new_role)
+
+        if not result:
+            raise APIError(message="Couldn´t change role, please alert devs", status_code=500)
+    
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
 
 
 
