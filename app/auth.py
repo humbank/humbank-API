@@ -109,8 +109,9 @@ def validate_business_name(business_name: str) -> bool:
 # 6. Check permissions of user's role
 # ------------------------------------
 def require_role(*allowed_roles):
-    if allowed_roles not in ROLES:
-        raise APIError(message="Unknown role", status_code=400)
+    for role in allowed_roles:
+        if role not in ROLES:
+            raise APIError(message="Unknown role", status_code=400)
     
     def decorator(fn):
         @wraps(fn)
