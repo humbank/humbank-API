@@ -588,11 +588,17 @@ def get_updated_accounts_after_time_route(current_username):
 # -------------------------
 #       CHANGE USER ROLE
 # -------------------------
-@api.route("/chnge_user_role", methods=["GET"])
+@api.route("/chnge_user_role", methods=["POST"])
 @require_auth
 @require_role("admin")
-def change_user_role_route(current_username, new_role):
+def change_user_role_route(current_username):
     try:
+        data = request.get_json() or {}
+        new_role = data.get("new_role")
+
+        if not new_role:
+            raise APIError(message="New role parameter missing", status_code=400)
+
         if new_role not in ROLES:
             raise APIError(message="Unknown role", status_code=400)
         
