@@ -588,10 +588,10 @@ def get_updated_accounts_after_time_route(current_username):
 # -------------------------
 #       CHANGE USER ROLE
 # -------------------------
-@api.route("/get_user_balance", methods=["GET"])
+@api.route("/chnge_user_role", methods=["GET"])
 @require_auth
 @require_role("admin")
-def get_user_balance_route(current_username, new_role):
+def change_user_role_route(current_username, new_role):
     try:
         if new_role not in ROLES:
             raise APIError(message="Unknown role", status_code=400)
