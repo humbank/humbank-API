@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
                             get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
-                            todays_transaction_amount, change_user_role, create_payment_request)
+                            todays_transaction_amount, change_user_role, create_payment_request, payment_request)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
-from app.db.connection import (username_exists, business_name_exists, )
+from app.db.connection import (username_exists, business_name_exists, get_full_name)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role, create_token_for_trans, ROLES)
 from datetime import datetime, timezone, timedelta
@@ -612,7 +612,6 @@ def change_user_role_route(current_username):
 
 
 
-
 # -----------------------------
 #       CREATE PAYMENT REQUEST
 # -----------------------------
@@ -640,7 +639,31 @@ def create_payment_request_route(current_username):
         if not response:
             raise APIError(message="Payment Request creation failed. Please alert devs", status_code=500)
 
-        return jsonify({"token": token, "expires_at":expires_at}), 200
+        return jsonify({"token": token, "expires_at" : expires_at}), 200
+
+
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+    
+
+# -----------------------------
+#       PAYMENT REQUEST
+# -----------------------------
+@api.route("/payment_request", methods=["GET"])
+@require_auth
+def payment_request_route(current_username, token):
+    try:
+        now = datetime.now(timezone.utc)
+
+        response = payment_request(token, now)
+        
+        if len(response) <= 0:
+            raise APIError(message="Token probably expired.", status_code=410)
+        
+        response["token"] = token
+        response["requester_full_name"] = get_full_name(current_username)
+
+        return jsonify(response), 200
 
 
     except APIError as e:

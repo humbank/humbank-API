@@ -415,3 +415,31 @@ def create_payment_request(token, requester_username, amount, expires_at, descri
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ----------------------------------------
+#       PAYMENT REQUEST
+# ----------------------------------------
+def payment_request(token, now):
+
+    conn = getBank()
+    cursor = conn.cursor(dictionary=True)
+
+    try:     
+        # Insert request
+        cursor.execute(
+            "select (requester_username, amount, desciption, expires_at) from payment_requests where token = %s and expires_at > %s;",
+            (token, now)
+        )
+
+        results = cursor.catch_all()
+
+        return results
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()

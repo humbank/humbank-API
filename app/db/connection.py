@@ -63,3 +63,13 @@ def business_is_deleted(owner_username):
     
     return result is not None
 
+def get_full_name(username):
+    conn = getBank()
+    cursor = conn.cursor()
+    cursor.execute("select concat(first_name, ' ', last_name) from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return result
+
