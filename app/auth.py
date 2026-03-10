@@ -11,6 +11,7 @@ from functools import wraps
 import re
 from .error import APIError
 from app.db.connection import username_exists
+import secrets
 
 
 bcrypt = Bcrypt()
@@ -132,3 +133,11 @@ def require_role(*allowed_roles):
                 return jsonify(e.to_dict()), e.status_code
         return wrapper
     return decorator
+
+
+# -----------------------------------
+# 7. CREATE TOKEN FOR TRANSACTIONS
+# -----------------------------------
+def create_token_for_trans():
+    return "req_" + secrets.token_urlsafe(16)
+    

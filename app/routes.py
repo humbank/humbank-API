@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
                             get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
-                            todays_transaction_amount, change_user_role)
+                            todays_transaction_amount, change_user_role, create_payment_request)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, )
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
-                   normalize_business_name, validate_business_name, require_role, ROLES)
-from datetime import datetime, timezone
+                   normalize_business_name, validate_business_name, require_role, create_token_for_trans, ROLES)
+from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from .error import APIError
 
@@ -588,7 +588,7 @@ def get_updated_accounts_after_time_route(current_username):
 # -------------------------
 #       CHANGE USER ROLE
 # -------------------------
-@api.route("/chnge_user_role", methods=["POST"])
+@api.route("/change_user_role", methods=["POST"])
 @require_auth
 @require_role("admin")
 def change_user_role_route(current_username):
@@ -607,6 +607,42 @@ def change_user_role_route(current_username):
         if not result:
             raise APIError(message="Couldn´t change role, please alert devs", status_code=500)
     
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+
+
+
+
+# -----------------------------
+#       CREATE PAYMENT REQUEST
+# -----------------------------
+@api.route("/create_payment_request", methods=["POST"])
+@require_auth
+def create_payment_request_route(current_username):
+    try:
+        data = request.get_json() or {}
+
+        amount = data.get("amount")
+        description = data.get("description")
+
+        
+        if not amount:
+            raise APIError(message="Amount is missing", status_code=400)
+        
+        if not description:
+            raise APIError(message="Description is missing", status_code=400)
+        
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+        token = create_token_for_trans()
+        
+        response = create_payment_request(token, current_username, amount, expires_at, description)
+        
+        if not response:
+            raise APIError(message="Payment Request creation failed. Please alert devs", status_code=500)
+
+        return jsonify({"token": token, "expires_at":expires_at}), 200
+
+
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
 

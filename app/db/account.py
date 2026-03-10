@@ -226,8 +226,6 @@ def execute_transfer(payer_username, issuer_username, amount, transaction_id, de
     try:
         netto_amount = round(amount - (amount * fee) - (amount * taxes), 2)
         fee_amount = amount - netto_amount
-
-        print(netto_amount, fee_amount)
         
         # Start transaction
         conn.start_transaction()
@@ -375,6 +373,36 @@ def change_user_role(username, role):
         sql = "update accounts set role = %s where username = %s;"
 
         cursor.execute(sql, (username, role))
+
+        conn.commit()
+
+        return True
+
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+
+# ----------------------------------------
+#       CREATE PAYMENT REQUEST
+# ----------------------------------------
+def create_payment_request(token, requester_username, amount, expires_at, description):
+
+    conn = getBank()
+    cursor = conn.cursor()
+
+    try:     
+
+        # Insert request
+        cursor.execute(
+            "insert into payment_requests (token, requester_username, amount, expires_at, description) values (%s, %s, %s, %s, %s)",
+            (token, requester_username, amount, expires_at, description)
+        )
 
         conn.commit()
 
