@@ -9,8 +9,9 @@ from .auth import (check_pin, generate_token, require_auth, normalize_username, 
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from .error import APIError
-import secrets
-import string
+
+
+api = Blueprint("api", __name__)
 
 BANK_FEE = 0.05
 
