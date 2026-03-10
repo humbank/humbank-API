@@ -432,7 +432,7 @@ def payment_request(token, now):
             (token, now)
         )
 
-        results = cursor.catch_all()
+        results = cursor.fetchall()
 
         return results
 
