@@ -9,12 +9,21 @@ from .auth import (check_pin, generate_token, require_auth, normalize_username, 
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from .error import APIError
-
-api = Blueprint("api", __name__)
+import secrets
+import string
 
 BANK_FEE = 0.05
 
 TAXES = {"Status1": 0.02, "Status2": 0.03, "Status3": 0.05}
+
+
+# -----------------------------
+#     RANDOM TX_ID GENERATOR     
+# -----------------------------
+def generate_tx_id():
+    alphabet = string.ascii_letters + string.digits
+    random_part = ''.join(secrets.choice(alphabet) for _ in range(12))
+    return f"tx_{random_part}"
 
 
 # -----------------------------
@@ -668,6 +677,33 @@ def payment_request_route(current_username, token):
         return jsonify(response), 200
 
 
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+
+
+# -----------------------------
+#    FULFILL PAYMENT REQUEST
+# -----------------------------
+@api.rout("/fulfill_payment_request", methods=["POST"])
+@require_auth
+def fulfill_payment_request_route(current_username)
+    try:
+        now = datetime.now(timezone.utc)
+
+        data = request.get_json() or {}
+
+        payment_data = payment_request(data.get("token"), now)
+
+        if len(data) <= 0:
+            raise APIError(message="Token probably expired.", status_code=410)
+        
+        result = execute_transfer(current_username, payment_data["requester_username"], payment_data["amount"], generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
+        if result is True:
+            return jsonify("Transfer completed"), 200
+        else:
+            raise APIError(message="Transfer went wrong", status_code=500)
+        
+        
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
 
