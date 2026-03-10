@@ -669,7 +669,7 @@ def payment_request_route(current_username, token):
 
         response = payment_request(token, now)
         
-        if len(response) <= 0:
+        if not response:
             raise APIError(message="Token probably expired.", status_code=410)
 
         
@@ -701,7 +701,7 @@ def fulfill_payment_request_route(current_username):
 
         payment_data = payment_request(data.get("token"), now)
 
-        if len(data) <= 0:
+        if not payment_data:
             raise APIError(message="Token probably expired.", status_code=410)
         
         result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
