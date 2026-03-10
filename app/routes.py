@@ -461,7 +461,7 @@ def execute_transfer_route(current_username):
         if not username_exists(issuer_username):
             raise APIError(message="User not found", status_code=404)
         
-        result = execute_transfer(payer_username, issuer_username, absolute_amount, transaction_id, description, BANK_FEE, TAXES["Status3"])
+        result = execute_transfer(payer_username, issuer_username, absolute_amount, transaction_id, description, BANK_FEE, 0.00)
         
         if result is True:
             return jsonify("Transfer completed"), 200
