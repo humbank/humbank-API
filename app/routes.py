@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.db.account import (get_user_account, get_user_balance, get_all_user_accounts, create_new_user_account, disable_user, ban_users, deban_users,
                             get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
-                            todays_transaction_amount, change_user_role, create_payment_request, payment_request)
+                            todays_transaction_amount, change_user_role, create_payment_request, payment_request, fulfill_payment_request)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
 from app.db.connection import (username_exists, business_name_exists, get_full_name)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
@@ -702,6 +702,7 @@ def fulfill_payment_request_route(current_username):
         
         result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
         if result is True:
+            fulfill_payment_request(now, payment_data["token"])
             return jsonify("Transfer completed"), 200
         else:
             raise APIError(message="Transfer went wrong", status_code=500)

@@ -443,3 +443,29 @@ def payment_request(token, now):
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+
+# ----------------------------------------
+#        FULFILL PAYMENT REQUEST
+# ----------------------------------------
+
+def fulfill_payment_request(current_time, request_token):
+
+    conn = getBank()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "update payment_requests set fulfilled_at=%s where token=%s",
+            (current_time, request_token)
+        )
+
+        return True
+    
+    except APIError:
+        conn.rollback()
+        raise
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
