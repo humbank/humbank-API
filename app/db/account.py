@@ -428,7 +428,7 @@ def payment_request(token, now):
     try:     
         # Insert request
         cursor.execute(
-            "select requester_username, amount, description, expires_at from payment_requests where token = %s and expires_at > %s;",
+            "select requester_username, amount, description, expires_at, fulfilled_at from payment_requests where token = %s and expires_at > %s;",
             (token, now)
         )
 
