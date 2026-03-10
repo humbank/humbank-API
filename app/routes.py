@@ -684,7 +684,7 @@ def payment_request_route(current_username, token):
 # -----------------------------
 #    FULFILL PAYMENT REQUEST
 # -----------------------------
-@api.rout("/fulfill_payment_request", methods=["POST"])
+@api.route("/fulfill_payment_request", methods=["POST"])
 @require_auth
 def fulfill_payment_request_route(current_username)
     try:
