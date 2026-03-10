@@ -659,6 +659,8 @@ def payment_request_route(current_username, token):
         
         if len(response) <= 0:
             raise APIError(message="Token probably expired.", status_code=410)
+
+        print(response)
         
         response["token"] = token
         response["requester_full_name"] = get_full_name(current_username)
