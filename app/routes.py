@@ -702,7 +702,7 @@ def fulfill_payment_request_route(current_username):
         
         result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
         if result is True:
-            fulfill_payment_request(now, payment_data["token"])
+            fulfill_payment_request(now, data.get["token"])
             return jsonify("Transfer completed"), 200
         else:
             raise APIError(message="Transfer went wrong", status_code=500)
