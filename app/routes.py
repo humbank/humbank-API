@@ -686,7 +686,7 @@ def payment_request_route(current_username, token):
 # -----------------------------
 @api.route("/fulfill_payment_request", methods=["POST"])
 @require_auth
-def fulfill_payment_request_route(current_username)
+def fulfill_payment_request_route(current_username):
     try:
         now = datetime.now(timezone.utc)
 
