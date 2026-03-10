@@ -649,7 +649,7 @@ def create_payment_request_route(current_username):
 # -----------------------------
 #       PAYMENT REQUEST
 # -----------------------------
-@api.route("/payment_request/{token}", methods=["GET"])
+@api.route("/payment_request/<token>", methods=["GET"])
 @require_auth
 def payment_request_route(current_username, token):
     try:
