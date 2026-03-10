@@ -459,6 +459,7 @@ def fulfill_payment_request(current_time, request_token):
             "update payment_requests set fulfilled_at=%s where token=%s",
             (current_time, request_token)
         )
+        conn.commit()
 
         return True
     
