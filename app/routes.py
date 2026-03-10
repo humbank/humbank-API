@@ -662,8 +662,8 @@ def payment_request_route(current_username, token):
 
         print(response)
         
-        response["token"] = token
-        response["requester_full_name"] = get_full_name(current_username)
+        response[0]["token"] = token
+        response[0]["requester_full_name"] = get_full_name(current_username)
 
         return jsonify(response), 200
 
