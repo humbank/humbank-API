@@ -700,7 +700,7 @@ def fulfill_payment_request_route(current_username):
         if len(data) <= 0:
             raise APIError(message="Token probably expired.", status_code=410)
         
-        result = execute_transfer(current_username, payment_data["requester_username"], payment_data["amount"], generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
+        result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
         if result is True:
             return jsonify("Transfer completed"), 200
         else:
