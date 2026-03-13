@@ -456,7 +456,7 @@ def fulfill_payment_request(current_time, request_token):
 
     try:
         cursor.execute(
-            "update payment_requests set fulfilled_at=%s where token=%s",
+            "update payment_requests set fulfilled_at=%s where token=%s;",
             (current_time, request_token)
         )
         conn.commit()
