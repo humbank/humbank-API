@@ -73,3 +73,13 @@ def get_full_name(username):
     
     return result
 
+def get_user_role(username):
+    conn = getBank()
+    cursor = conn.cursor()
+    cursor.execute("select role from accounts where username = %s and deleted_at is NULL and banned_at is NULL;", (username,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return result
+

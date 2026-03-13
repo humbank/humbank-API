@@ -17,7 +17,7 @@ import secrets
 bcrypt = Bcrypt()
 
 
-ROLES = ["admin", "user"]
+ROLES = ["admin", "user", "business_owner"]
 
 
 def hash_pin(pin):

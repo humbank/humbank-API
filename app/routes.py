@@ -3,7 +3,8 @@ from app.db.account import (get_user_account, get_user_balance, get_all_user_acc
                             get_updated_accounts_after_time, execute_transfer, get_todays_transactions, transactions_amount, 
                             todays_transaction_amount, change_user_role, create_payment_request, payment_request, fulfill_payment_request)
 from app.db.business import (get_business_balance, execute_transfer_to_business, create_business, disable_business)
-from app.db.connection import (username_exists, business_name_exists, get_full_name)
+from app.db.connection import (username_exists, business_name_exists, get_full_name, get_user_role)
+from app.db.products import (create_product)
 from .auth import (check_pin, generate_token, require_auth, normalize_username, validate_username, 
                    normalize_business_name, validate_business_name, require_role, create_token_for_trans, ROLES)
 from datetime import datetime, timezone, timedelta
@@ -676,7 +677,6 @@ def payment_request_route(current_username, token):
         if response["fulfilled_at"] is not None:
             raise APIError(message="Payment request already fulfilled", status_code=410)
 
-        print(response)
         
         response["token"] = token
         response["requester_full_name"] = get_full_name(current_username)[0]
@@ -705,7 +705,8 @@ def fulfill_payment_request_route(current_username):
             raise APIError(message="Token probably expired.", status_code=410)
         
         result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
-        if result is True:
+        
+        if result:
             fulfill_payment_request(now, data.get("token"))
             return jsonify("Transfer completed"), 200
         else:
@@ -714,6 +715,74 @@ def fulfill_payment_request_route(current_username):
         
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
+
+
+#--------------------------------------------------------------
+#                       PRODUCT SECTION
+#--------------------------------------------------------------
+
+# -----------------------------
+#    CREATE PRODUCT
+# -----------------------------
+@api.route("/", methods=["POST"])
+@require_auth
+@require_role("admin", "business_owner")
+def create_product_route(current_username):
+    try:
+        data = request.get_json() or {}
+
+        product_name = data.get("product_name")
+        price = data.get("price")
+        description = data.get("description")
+
+        if not product_name:
+            raise APIError(message="Product_name missing", status_code=400)
+        
+        if not price:
+            raise APIError(message="Price missing", status_code=400)
+        
+        if not description:
+            raise APIError(message="Description missing", status_code=400)
+
+        if get_user_role(current_username)[0] == ""
+
+
+        if not payment_data:
+            raise APIError(message="Token probably expired.", status_code=410)
+        
+        result = execute_transfer(current_username, payment_data["requester_username"], float(payment_data["amount"]), generate_tx_id(), payment_data["description"], BANK_FEE, TAXES["Status3"])
+        
+        if result:
+            fulfill_payment_request(now, data.get("token"))
+            return jsonify("Transfer completed"), 200
+        else:
+            raise APIError(message="Transfer went wrong", status_code=500)
+        
+        
+    except APIError as e:
+        return jsonify(e.to_dict()), e.status_code
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
